@@ -25,13 +25,13 @@ namespace zadaci_2
                 FileSystemService.ReadAllTextUtf8(Constants.TestFilesPath + "A1B1PlainText3.txt"),
                 new int[] { 0, 1, 5, 4, 6, 3, 2 },
                 new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 },
-                Constants.Results_A1_2_FilesPath + "A1B1PlainText3_encoded.txt");
+                Constants.Results_A1_2_FilesPath + "A1B1PlainText3_encrypted.txt");
 
             DoubleTranspositionCrypto.Decrypt(
                 FileSystemService.ReadAllTextUtf8(Constants.Results_A1_2_FilesPath + "A1B1PlainText3_encoded.txt"),
                 new int[] { 0, 1, 5, 4, 6, 3, 2 },
                 new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 },
-                Constants.Results_A1_2_FilesPath + "A1B1PlainText3_decoded.txt");
+                Constants.Results_A1_2_FilesPath + "A1B1PlainText3_decrypted.txt");
 
             //FileSystemService.WriteAllText("asd.docx", FileSystemService.ReadAllTextDefault(Constants.TestFilesPath + "A1B1PlainText2.docx"));
 
