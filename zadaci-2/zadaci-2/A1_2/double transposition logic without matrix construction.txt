@@ -1,0 +1,27 @@
+  012345678          chunkStartIndex = chunk * _rows * _cols;
+0 attackatd          
+1 awnattack          currentChunkRow = (c - chunkStartIndex)/_cols
+2 atdawnatt          chunkRowToSwitchWith = rowKeys[currentChunkRow]                                   } za redove
+3 ackatdawn          charToSwitchWith = chunkStartIndex + chunkRowToSwitchWith * _cols + c % _cols
+4 attackatd
+5 awnattack
+6 atdawnatt          currentChunkColumn = c % _cols
+                     chunkColumnToSwitchWith = columnKeys[currentChunkColumn]
+|                    // ako su jednake current i switchWith opet optimizacija (skip)           } za kolone
+                     charToSwitchWith = c - currentChunkColumn + chunkColumnToSwitchWith
+attackatd
+awnattack
+atdawnatt
+ackatdawn
+attackatd
+awnattack
+atdawnatt
+
+|
+
+attackatd
+awnattack
+atdawnatt
+ackatdawn
+attackatd
+awnattack
