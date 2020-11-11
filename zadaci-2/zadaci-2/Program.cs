@@ -28,7 +28,7 @@ namespace zadaci_2
                 Constants.Results_A1_2_FilesPath + "A1B1PlainText3_encrypted.txt");
 
             DoubleTranspositionCrypto.Decrypt(
-                FileSystemService.ReadAllTextUtf8(Constants.Results_A1_2_FilesPath + "A1B1PlainText3_encoded.txt"),
+                FileSystemService.ReadAllTextUtf8(Constants.Results_A1_2_FilesPath + "A1B1PlainText3_encrypted.txt"),
                 new int[] { 0, 1, 5, 4, 6, 3, 2 },
                 new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 },
                 Constants.Results_A1_2_FilesPath + "A1B1PlainText3_decrypted.txt");
