@@ -51,26 +51,26 @@ namespace zadaci_2
                 FileSystemService.ReadAllBytes(Constants.TestFilesPath + "A1B1PlainText2.docx"),
                 new int[] { 0, 1, 5, 4, 6, 3, 2 },
                 new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 });
-            FileSystemService.WriteAllBytes(Constants.Results_A1_2_FilesPath + "A1B1PlainText2_encrypted.docx", bytesEncr);
+            FileSystemService.WriteAllBytes(Constants.Results_A1_2_FilesPath + "A1B1PlainText2_encrypted", bytesEncr);
 
             var bytesDecrypt = DoubleTranspositionCrypto.Decrypt(
-                FileSystemService.ReadAllBytes(Constants.Results_A1_2_FilesPath + "A1B1PlainText2_encrypted.docx"),
+                FileSystemService.ReadAllBytes(Constants.Results_A1_2_FilesPath + "A1B1PlainText2_encrypted"),
                 new int[] { 0, 1, 5, 4, 6, 3, 2 },
                 new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 });
             FileSystemService.WriteAllBytes(Constants.Results_A1_2_FilesPath + "A1B1PlainText2_decrypted.docx", bytesDecrypt);
 
             // .ppt file
             var bytesEncrPpt = DoubleTranspositionCrypto.Encrypt(
-                FileSystemService.ReadAllBytes(Constants.TestFilesPath + "A1B1PlainText1.ppt"),
+                FileSystemService.ReadAllBytes(Constants.TestFilesPath + "razgradnja glukoze masti aminokis.pptx"),
                 new int[] { 0, 1, 5, 4, 6, 3, 2 },
                 new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 });
-            FileSystemService.WriteAllBytes(Constants.Results_A1_2_FilesPath + "A1B1PlainText1_encrypted.ppt", bytesEncrPpt);
+            FileSystemService.WriteAllBytes(Constants.Results_A1_2_FilesPath + "A1B1PlainText1_encrypted", bytesEncrPpt);
 
             var bytesDecryptPpt = DoubleTranspositionCrypto.Decrypt(
-                FileSystemService.ReadAllBytes(Constants.Results_A1_2_FilesPath + "A1B1PlainText1_encrypted.ppt"),
+                FileSystemService.ReadAllBytes(Constants.Results_A1_2_FilesPath + "A1B1PlainText1_encrypted"),
                 new int[] { 0, 1, 5, 4, 6, 3, 2 },
                 new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 });
-            FileSystemService.WriteAllBytes(Constants.Results_A1_2_FilesPath + "A1B1PlainText1_decrypted.ppt", bytesDecryptPpt);
+            FileSystemService.WriteAllBytes(Constants.Results_A1_2_FilesPath + "A1B1PlainText1_decrypted.pptx", bytesDecryptPpt);
         }
     }
 }
