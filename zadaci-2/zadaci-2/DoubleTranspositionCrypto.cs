@@ -10,17 +10,17 @@ namespace zadaci_2
         private const int _cols = 9;
         private const int _rows = 7;
 
-        public static void Encrypt(string text, int[] rowKeys, int[] columnKeys, string outputPath)
+        public static byte[] Encrypt(byte[] bytes, int[] rowKeys, int[] columnKeys)
         {
             if (!ValidateRowKeys(rowKeys))
                 throw new ArgumentException("Row keys should all be different and in range [0-6]. Number of keys should be 7.");
             if (!ValidateColumnKeys(columnKeys))
                 throw new ArgumentException("Column keys should all be different and in range [0-8]. Number of keys should be 9.");
 
-            StringBuilder cipherText = new StringBuilder(text);
+            byte[] cipherBytes = (byte[])bytes.Clone();
 
             //rows 
-            for (int c = 0; c < text.Length; c++)
+            for (int c = 0; c < bytes.Length; c++)
             {
                 int chunk = c / (_cols * _rows);
                 int chunkStartIndex = chunk * _rows * _cols;
@@ -35,13 +35,13 @@ namespace zadaci_2
                 }
                 int charToSwitchWith = chunkStartIndex + chunkRowToSwitchWith * _cols + c % _cols;
 
-                if (charToSwitchWith.IsInArrayRange(text.Length))
-                    cipherText[c] = text[charToSwitchWith];
+                if (charToSwitchWith.IsInArrayRange(bytes.Length))
+                    cipherBytes[c] = bytes[charToSwitchWith];
             }
 
-            text = cipherText.ToString();
+            bytes = (byte[])cipherBytes.Clone();
             //cols
-            for (int c = 0; c < text.Length; c++)
+            for (int c = 0; c < bytes.Length; c++)
             {
                 int currentChunkColumn = c % _cols;
                 int chunkColumnToSwitchWith = columnKeys[currentChunkColumn];
@@ -51,22 +51,24 @@ namespace zadaci_2
 
                 int charToSwitchWith = c - currentChunkColumn + chunkColumnToSwitchWith;
 
-                if (charToSwitchWith.IsInArrayRange(text.Length))
-                    cipherText[c] = text[charToSwitchWith];
+                if (charToSwitchWith.IsInArrayRange(bytes.Length))
+                    cipherBytes[c] = bytes[charToSwitchWith];
             }
-            FileSystemService.WriteAllText(outputPath, cipherText.ToString());
+
+            return cipherBytes;
         }
 
-        public static void Decrypt(string cipherText, int[] rowKeys, int[] columnKeys, string outputPath)
+        public static byte[] Decrypt(byte[] cipherBytes, int[] rowKeys, int[] columnKeys)
         {
             if (!ValidateRowKeys(rowKeys))
                 throw new ArgumentException("Row keys should all be different and in range [0-6]. Number of keys should be 7.");
             if (!ValidateColumnKeys(columnKeys))
                 throw new ArgumentException("Column keys should all be different and in range [0-8]. Number of keys should be 9.");
 
-            StringBuilder decryptedText = new StringBuilder(cipherText);
+            byte[] decryptedBytes = (byte[])cipherBytes.Clone();
+
             //cols
-            for (int c = 0; c < cipherText.Length; c++)
+            for (int c = 0; c < cipherBytes.Length; c++)
             {
                 int currentChunkColumn = c % _cols;
                 int chunkColumnToInsertIn = columnKeys[currentChunkColumn];
@@ -76,13 +78,13 @@ namespace zadaci_2
 
                 int positionToInsertCurrentChar = c - currentChunkColumn + chunkColumnToInsertIn;
 
-                if (positionToInsertCurrentChar.IsInArrayRange(cipherText.Length))
-                    decryptedText[positionToInsertCurrentChar] = cipherText[c];
+                if (positionToInsertCurrentChar.IsInArrayRange(cipherBytes.Length))
+                    decryptedBytes[positionToInsertCurrentChar] = cipherBytes[c];
             }
-            cipherText = decryptedText.ToString();
+            cipherBytes = (byte[])decryptedBytes.Clone();
 
             //rows 
-            for (int c = 0; c < cipherText.Length; c++)
+            for (int c = 0; c < cipherBytes.Length; c++)
             {
                 int chunk = c / (_cols * _rows);
                 int chunkStartIndex = chunk * _rows * _cols;
@@ -97,11 +99,11 @@ namespace zadaci_2
                 }
                 int positionToInsertCurrentChar = chunkStartIndex + chunkRowToSwitchWith * _cols + c % _cols;
 
-                if (positionToInsertCurrentChar.IsInArrayRange(cipherText.Length))
-                    decryptedText[positionToInsertCurrentChar] = cipherText[c];
+                if (positionToInsertCurrentChar.IsInArrayRange(cipherBytes.Length))
+                    decryptedBytes[positionToInsertCurrentChar] = cipherBytes[c];
             }
-            
-            FileSystemService.WriteAllText(outputPath, decryptedText.ToString());
+
+            return decryptedBytes;
         }
 
         private static bool ValidateColumnKeys(int[] columnKeys)

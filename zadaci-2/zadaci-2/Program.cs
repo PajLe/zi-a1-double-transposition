@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace zadaci_2
 {
@@ -8,58 +9,68 @@ namespace zadaci_2
         static void Main(string[] args)
         {
             // dev tests
-            //DoubleTranspositionCrypto.Encrypt(
-            //    FileSystemService.ReadAllTextUtf8(Constants.A1_2_FilesPath + "testRows.txt"),
-            //    new int[] { 0, 1, 5, 4, 6, 3, 2 }, 
-            //    new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 },
-            //    "outputRowsAndColsTest.txt");
-
-            //DoubleTranspositionCrypto.Decrypt(
-            //    FileSystemService.ReadAllTextUtf8(Constants.A1_2_FilesPath + "encoded.txt"),
+            //var bytesEncr = DoubleTranspositionCrypto.Encrypt(
+            //    FileSystemService.ReadAllBytes(Constants.A1_2_FilesPath + "testColumns.txt"),
             //    new int[] { 0, 1, 5, 4, 6, 3, 2 },
-            //    new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 },
-            //    "outputDecodedRowsAndColsTest.txt");
+            //    new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 });
+            //FileSystemService.WriteAllBytes(Constants.A1_2_FilesPath + "testRows_encrypted.txt", bytesEncr);
+
+            //var bytesDecrypt = DoubleTranspositionCrypto.Decrypt(
+            //    FileSystemService.ReadAllBytes(Constants.A1_2_FilesPath + "testRows_encrypted.txt"),
+            //    new int[] { 0, 1, 5, 4, 6, 3, 2 },
+            //    new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 });
+            //FileSystemService.WriteAllBytes(Constants.A1_2_FilesPath + "testRows_decrypted.txt", bytesDecrypt);
 
             // .txt file
-            DoubleTranspositionCrypto.Encrypt(
-                FileSystemService.ReadAllTextUtf8(Constants.TestFilesPath + "A1B1PlainText3.txt"),
+            var txtEncryptBytes = DoubleTranspositionCrypto.Encrypt(
+                FileSystemService.ReadAllBytes(Constants.TestFilesPath + "A1B1PlainText3.txt"),
                 new int[] { 0, 1, 5, 4, 6, 3, 2 },
-                new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 },
-                Constants.Results_A1_2_FilesPath + "A1B1PlainText3_encrypted.txt");
+                new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 });
+            FileSystemService.WriteAllBytes(Constants.Results_A1_2_FilesPath + "A1B1PlainText3_encrypted.txt", txtEncryptBytes);
 
-            DoubleTranspositionCrypto.Decrypt(
-                FileSystemService.ReadAllTextUtf8(Constants.Results_A1_2_FilesPath + "A1B1PlainText3_encrypted.txt"),
+            var txtDecryptBytes = DoubleTranspositionCrypto.Decrypt(
+                FileSystemService.ReadAllBytes(Constants.Results_A1_2_FilesPath + "A1B1PlainText3_encrypted.txt"),
                 new int[] { 0, 1, 5, 4, 6, 3, 2 },
-                new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 },
-                Constants.Results_A1_2_FilesPath + "A1B1PlainText3_decrypted.txt");
+                new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 });
+            FileSystemService.WriteAllBytes(Constants.Results_A1_2_FilesPath + "A1B1PlainText3_decrypted.txt", txtDecryptBytes);
 
-            //FileSystemService.WriteAllText("asd.docx", FileSystemService.ReadAllTextDefault(Constants.TestFilesPath + "A1B1PlainText2.docx"));
+            //var allBytes = FileSystemService.ReadAllBytes(Constants.TestFilesPath + "A1B1PlainText2.docx");
+            //byte p = allBytes[0];
+            //allBytes[0] = allBytes[1];
+            //allBytes[1] = p;
+            //FileSystemService.WriteAllBytes("encrypted.docx", allBytes);
+
+            //var encryptedBytes = FileSystemService.ReadAllBytes("encrypted.docx");
+            //p = encryptedBytes[0];
+            //encryptedBytes[0] = encryptedBytes[1];
+            //encryptedBytes[1] = p;
+            //FileSystemService.WriteAllBytes("decrypted.docx", encryptedBytes);
 
             // .docx file
-            //DoubleTranspositionCrypto.Encrypt(
-            //    FileSystemService.ReadAllTextUtf8(Constants.TestFilesPath + "A1B1PlainText2.docx"),
-            //    new int[] { 0, 1, 5, 4, 6, 3, 2 },
-            //    new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 },
-            //    Constants.Results_A1_2_FilesPath + "A1B1PlainText2_encoded.docx");
+            var bytesEncr = DoubleTranspositionCrypto.Encrypt(
+                FileSystemService.ReadAllBytes(Constants.TestFilesPath + "A1B1PlainText2.docx"),
+                new int[] { 0, 1, 5, 4, 6, 3, 2 },
+                new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 });
+            FileSystemService.WriteAllBytes(Constants.Results_A1_2_FilesPath + "A1B1PlainText2_encrypted.docx", bytesEncr);
 
-            //DoubleTranspositionCrypto.Decrypt(
-            //    FileSystemService.ReadAllTextUtf8(Constants.Results_A1_2_FilesPath + "A1B1PlainText2_encoded.docx"),
-            //    new int[] { 0, 1, 5, 4, 6, 3, 2 },
-            //    new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 },
-            //    Constants.Results_A1_2_FilesPath + "A1B1PlainText2_decoded.docx");
+            var bytesDecrypt = DoubleTranspositionCrypto.Decrypt(
+                FileSystemService.ReadAllBytes(Constants.Results_A1_2_FilesPath + "A1B1PlainText2_encrypted.docx"),
+                new int[] { 0, 1, 5, 4, 6, 3, 2 },
+                new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 });
+            FileSystemService.WriteAllBytes(Constants.Results_A1_2_FilesPath + "A1B1PlainText2_decrypted.docx", bytesDecrypt);
 
             // .ppt file
-            //DoubleTranspositionCrypto.Encrypt(
-            //    FileSystemService.ReadAllTextUtf8(Constants.TestFilesPath + "A1B1PlainText3.txt"),
-            //    new int[] { 0, 1, 5, 4, 6, 3, 2 },
-            //    new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 },
-            //    Constants.Results_A1_2_FilesPath + "A1B1PlainText3_encoded.txt");
+            var bytesEncrPpt = DoubleTranspositionCrypto.Encrypt(
+                FileSystemService.ReadAllBytes(Constants.TestFilesPath + "A1B1PlainText1.ppt"),
+                new int[] { 0, 1, 5, 4, 6, 3, 2 },
+                new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 });
+            FileSystemService.WriteAllBytes(Constants.Results_A1_2_FilesPath + "A1B1PlainText1_encrypted.ppt", bytesEncrPpt);
 
-            //DoubleTranspositionCrypto.Decrypt(
-            //    FileSystemService.ReadAllTextUtf8(Constants.Results_A1_2_FilesPath + "A1B1PlainText3_encoded.txt"),
-            //    new int[] { 0, 1, 5, 4, 6, 3, 2 },
-            //    new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 },
-            //    Constants.Results_A1_2_FilesPath + "A1B1PlainText3_decoded.txt");
+            var bytesDecryptPpt = DoubleTranspositionCrypto.Decrypt(
+                FileSystemService.ReadAllBytes(Constants.Results_A1_2_FilesPath + "A1B1PlainText1_encrypted.ppt"),
+                new int[] { 0, 1, 5, 4, 6, 3, 2 },
+                new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 });
+            FileSystemService.WriteAllBytes(Constants.Results_A1_2_FilesPath + "A1B1PlainText1_decrypted.ppt", bytesDecryptPpt);
         }
     }
 }

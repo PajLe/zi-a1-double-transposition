@@ -322,8 +322,7 @@ Kreirati klasu Ugao koja ciji su privatni atributi: stepen (koji mora da bude u 
 Definisati i sledeće prijateljske funkcije: 
 •	operatorsku funkciju >>  za učitavanje vrednosti ugla iz tekstualnog toka podataka koja opet vodi računa o dozvoljenom opsegu,
 •	operatorsku funkciju << za upis ugla u tekstualni tok podataka.
-U funkciji main kreirati dva vetora celih brojeva i dva vektora uglova, elemente vektora učitati sa standardnog ulaza, a rezultujuce vektore prikazati na standardni izlaz
-
+U funkciji main kreirati dva vetora celih brojeva i dva vektora uglova, elemente vektora učitati sa standardnog ulaza, a rezultujuce vektore prikazati na standardni izlaz.
 
 
 
