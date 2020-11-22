@@ -14,5 +14,7 @@ namespace zadaci_2
 
             return true;
         }
+
+        public static int Mod(this int k, int n) { return ((k %= n) < 0) ? k + n : k; }
     }
 }
