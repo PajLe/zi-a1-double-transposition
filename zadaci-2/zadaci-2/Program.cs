@@ -8,31 +8,25 @@ namespace zadaci_2
     {
         static void Main(string[] args)
         {
-            // dev tests
-            //var bytesEncr = DoubleTranspositionCrypto.Encrypt(
-            //    FileSystemService.ReadAllBytes(Constants.A1_2_FilesPath + "testColumns.txt"),
-            //    new int[] { 0, 1, 5, 4, 6, 3, 2 },
-            //    new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 });
-            //FileSystemService.WriteAllBytes(Constants.A1_2_FilesPath + "testRows_encrypted.txt", bytesEncr);
+            //string crypted = PlayfairCrypto.Encrypt("ins,truments instruments", "monarchy");
+            //Console.WriteLine(crypted);
+            //string decrypted = PlayfairCrypto.Decrypt(crypted, "monarchy");
+            //Console.WriteLine(decrypted);
 
-            //var bytesDecrypt = DoubleTranspositionCrypto.Decrypt(
-            //    FileSystemService.ReadAllBytes(Constants.A1_2_FilesPath + "testRows_encrypted.txt"),
-            //    new int[] { 0, 1, 5, 4, 6, 3, 2 },
-            //    new int[] { 1, 4, 2, 7, 3, 8, 0, 5, 6 });
-            //FileSystemService.WriteAllBytes(Constants.A1_2_FilesPath + "testRows_decrypted.txt", bytesDecrypt);
+            string crypted = PlayfairCrypto.Encrypt(FileSystemService.ReadAllText(Constants.TestFilesPath + "bible.txt"), "monarchy");
+            FileSystemService.WriteAllTextUtf8(Constants.Results_A2_2_FilesPath + "bible_encrypted.txt", crypted);
+            string decrypted = PlayfairCrypto.Decrypt(FileSystemService.ReadAllText(Constants.Results_A2_2_FilesPath + "bible_encrypted.txt"), "monarchy");
+            FileSystemService.WriteAllTextUtf8(Constants.Results_A2_2_FilesPath + "bible_decrypted.txt", decrypted);
 
-            //byte[] bmp1 = FileSystemService.ReadAllBytes(Constants.TestFilesPath + "B2D.bmp");
-            //int pos1 = bmp1[10] + 256 * (bmp1[11] + 256 * (bmp1[12] + 256 * bmp1[13]));
+            crypted = PlayfairCrypto.Encrypt(FileSystemService.ReadAllText(Constants.TestFilesPath + "E.coli"), "monarchy");
+            FileSystemService.WriteAllTextUtf8(Constants.Results_A2_2_FilesPath + "E_encrypted.coli", crypted);
+            decrypted = PlayfairCrypto.Decrypt(FileSystemService.ReadAllText(Constants.Results_A2_2_FilesPath + "E_encrypted.coli"), "monarchy");
+            FileSystemService.WriteAllTextUtf8(Constants.Results_A2_2_FilesPath + "E_decrypted.coli", decrypted);
 
-            //FileStream fsr = System.IO.File.OpenRead(Constants.TestFilesPath + "B2D.bmp");
-            //byte[] a = new byte[fsr.Length];
-            //fsr.Read(a, 0, Convert.ToInt32(fsr.Length));
-            //int pos = a[10] + 256 * (a[11] + 256 * (a[12] + 256 * a[13]));
-
-            string crypted = PlayfairCrypto.Encrypt("iNst[]rumeNt]ss", "monarchy");
-            Console.WriteLine(crypted);
-            string decrypted = PlayfairCrypto.Decrypt(crypted, "monarchy");
-            Console.WriteLine(decrypted);
+            crypted = PlayfairCrypto.Encrypt(FileSystemService.ReadAllText(Constants.TestFilesPath + "world192.txt"), "monarchy");
+            FileSystemService.WriteAllTextUtf8(Constants.Results_A2_2_FilesPath + "world192_encrypted.txt", crypted);
+            decrypted = PlayfairCrypto.Decrypt(FileSystemService.ReadAllText(Constants.Results_A2_2_FilesPath + "world192_encrypted.txt"), "monarchy");
+            FileSystemService.WriteAllTextUtf8(Constants.Results_A2_2_FilesPath + "world192_decrypted.txt", decrypted);
         }
     }
 }
