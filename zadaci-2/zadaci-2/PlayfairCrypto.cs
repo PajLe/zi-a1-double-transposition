@@ -193,14 +193,16 @@ namespace zadaci_2
                 }
                 else
                 {
-                    if (plaintext[plaintext.Length - 1] == 'z')
+                    if ((plaintext.Length - 1).IsInArrayRange(plaintext.Length)
+                        && plaintext[plaintext.Length - 1] == 'z')
                         plaintext.Remove(plaintext.Length - 1, 1);
                     plaintext.Append(cipherText[i]);
                 }
 
             }
 
-            if (plaintext[plaintext.Length - 1] == 'z')
+            if ((plaintext.Length - 1).IsInArrayRange(plaintext.Length)
+                && plaintext[plaintext.Length - 1] == 'z')
                 plaintext.Remove(plaintext.Length - 1, 1);
             return plaintext.ToString();
         }
