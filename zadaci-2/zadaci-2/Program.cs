@@ -29,7 +29,7 @@ namespace zadaci_2
             //fsr.Read(a, 0, Convert.ToInt32(fsr.Length));
             //int pos = a[10] + 256 * (a[11] + 256 * (a[12] + 256 * a[13]));
 
-            string crypted = PlayfairCrypto.Encrypt("inst[]rume]nts", "monarchy");
+            string crypted = PlayfairCrypto.Encrypt("iNst[]rume]nts", "monarchy");
             Console.WriteLine(crypted);
         }
     }

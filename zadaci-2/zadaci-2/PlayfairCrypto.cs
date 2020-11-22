@@ -27,10 +27,15 @@ namespace zadaci_2
                 }
                 else
                 {
+                    char charToTake = (plaintext[i] == 'j')
+                        ? 'i'
+                        : (plaintext[i] == 'J')
+                            ? 'I'
+                            : plaintext[i];
                     if (first == null)
-                        first = plaintext[i];
+                        first = charToTake;
                     else if (second == null)
-                        second = plaintext[i];
+                        second = charToTake;
                 }
 
                 if (i == plaintext.Length - 1 && second == null)
@@ -38,10 +43,18 @@ namespace zadaci_2
                 
                 if (first.HasValue && second.HasValue)
                 {
-                    int[] firstCoords = charCoords[first.Value];
-                    int[] secondCoords = charCoords[second.Value];
-                    string crypted = ProcessCoordinates(firstCoords, secondCoords, keyAlphabet);
-                    cipherText.Append(crypted);
+                    int[] firstCoords = charCoords[char.ToLower(first.Value)];
+                    int[] secondCoords = charCoords[char.ToLower(second.Value)];
+                    ProcessCoordinates(ref firstCoords, ref secondCoords, keyAlphabet);
+                    if (char.IsUpper(first.Value))
+                        cipherText.Append(char.ToUpper(keyAlphabet[firstCoords[0], firstCoords[1]]));
+                    else
+                        cipherText.Append(keyAlphabet[firstCoords[0], firstCoords[1]]);
+
+                    if (char.IsUpper(second.Value))
+                        cipherText.Append(char.ToUpper(keyAlphabet[secondCoords[0], secondCoords[1]]));
+                    else
+                        cipherText.Append(keyAlphabet[secondCoords[0], secondCoords[1]]);
                     first = null;
                     second = null;
                 }
@@ -50,7 +63,7 @@ namespace zadaci_2
             return cipherText.ToString();
         }
 
-        private static string ProcessCoordinates(int[] firstCoords, int[] secondCoords, char[,] keyAlphabet)
+        private static void ProcessCoordinates(ref int[] firstCoords, ref int[] secondCoords, char[,] keyAlphabet)
         {
             int firstRow = firstCoords[0],
                 firstColumn = firstCoords[1];
@@ -74,7 +87,10 @@ namespace zadaci_2
                 secondColumn = p;
             }
 
-            return string.Empty + keyAlphabet[firstRow, firstColumn] + keyAlphabet[secondRow, secondColumn];
+            firstCoords[0] = firstRow;
+            firstCoords[1] = firstColumn;
+            secondCoords[0] = secondRow;
+            secondCoords[1] = secondColumn;
         }
 
         private static char[,] FormKeyAlphabet(string key)
