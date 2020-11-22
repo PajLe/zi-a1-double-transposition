@@ -20,47 +20,62 @@ namespace zadaci_2
             char? first = null, second = null;
             for (int i = 0; i < plaintext.Length; i++)
             {
-                char lowerChar = char.ToLower(plaintext[i]);
-                if (!_alphabetWithoutLetterJ.Contains(lowerChar))
-                {
-                    cipherText.Append(plaintext[i]);
-                }
-                else
+                if (_alphabetWithoutLetterJ.Contains(char.ToLower(plaintext[i])))
                 {
                     char charToTake = (plaintext[i] == 'j')
                         ? 'i'
                         : (plaintext[i] == 'J')
                             ? 'I'
                             : plaintext[i];
+
                     if (first == null)
                         first = charToTake;
                     else if (second == null)
                         second = charToTake;
-                }
 
-                if (i == plaintext.Length - 1 && second == null)
-                    second = 'z';
-                
-                if (first.HasValue && second.HasValue)
+                    if (first.HasValue && second.HasValue)
+                    {
+                        AppendEncryptedValues(first.Value, second.Value, charCoords, keyAlphabet, cipherText);
+                        first = null;
+                        second = null;
+                    }
+                }
+                else
                 {
-                    int[] firstCoords = (int[])charCoords[char.ToLower(first.Value)].Clone();
-                    int[] secondCoords = (int[])charCoords[char.ToLower(second.Value)].Clone();
-                    ProcessEncryptCoordinates(ref firstCoords, ref secondCoords, keyAlphabet);
-                    if (char.IsUpper(first.Value))
-                        cipherText.Append(char.ToUpper(keyAlphabet[firstCoords[0], firstCoords[1]]));
-                    else
-                        cipherText.Append(keyAlphabet[firstCoords[0], firstCoords[1]]);
-
-                    if (char.IsUpper(second.Value))
-                        cipherText.Append(char.ToUpper(keyAlphabet[secondCoords[0], secondCoords[1]]));
-                    else
-                        cipherText.Append(keyAlphabet[secondCoords[0], secondCoords[1]]);
-                    first = null;
-                    second = null;
+                    if (first != null)
+                    {
+                        second ??= 'z';
+                        AppendEncryptedValues(first.Value, second.Value, charCoords, keyAlphabet, cipherText);
+                        first = null;
+                        second = null;
+                    }
+                    cipherText.Append(plaintext[i]);
                 }
+
             }
 
+            if (first != null)
+            {
+                second ??= 'z';
+                AppendEncryptedValues(first.Value, second.Value, charCoords, keyAlphabet, cipherText);
+            }
             return cipherText.ToString();
+        }
+
+        private static void AppendEncryptedValues(char first, char second, Dictionary<char, int[]> charCoords, char[,] keyAlphabet, StringBuilder cipherText)
+        {
+            int[] firstCoords = (int[])charCoords[char.ToLower(first)].Clone();
+            int[] secondCoords = (int[])charCoords[char.ToLower(second)].Clone();
+            ProcessEncryptCoordinates(ref firstCoords, ref secondCoords, keyAlphabet);
+            if (char.IsUpper(first))
+                cipherText.Append(char.ToUpper(keyAlphabet[firstCoords[0], firstCoords[1]]));
+            else
+                cipherText.Append(keyAlphabet[firstCoords[0], firstCoords[1]]);
+
+            if (char.IsUpper(second))
+                cipherText.Append(char.ToUpper(keyAlphabet[secondCoords[0], secondCoords[1]]));
+            else
+                cipherText.Append(keyAlphabet[secondCoords[0], secondCoords[1]]);
         }
 
         private static void ProcessEncryptCoordinates(ref int[] firstCoords, ref int[] secondCoords, char[,] keyAlphabet)
@@ -161,40 +176,49 @@ namespace zadaci_2
             for (int i = 0; i < cipherText.Length; i++)
             {
                 char lowerChar = char.ToLower(cipherText[i]);
-                if (!_alphabetWithoutLetterJ.Contains(lowerChar))
-                {
-                    plaintext.Append(cipherText[i]);
-                }
-                else
+                if (_alphabetWithoutLetterJ.Contains(lowerChar))
                 {
                     char charToTake = cipherText[i];
                     if (first == null)
                         first = charToTake;
                     else if (second == null)
                         second = charToTake;
-                }
 
-                if (first.HasValue && second.HasValue)
+                    if (first.HasValue && second.HasValue)
+                    {
+                        AppendDecryptedValues(first.Value, second.Value, charCoords, keyAlphabet, plaintext);
+                        first = null;
+                        second = null;
+                    }
+                }
+                else
                 {
-                    int[] firstCoords = (int[])charCoords[char.ToLower(first.Value)].Clone();
-                    int[] secondCoords = (int[])charCoords[char.ToLower(second.Value)].Clone();
-                    ProcessDecryptCoordinates(ref firstCoords, ref secondCoords, keyAlphabet);
-                    if (char.IsUpper(first.Value))
-                        plaintext.Append(char.ToUpper(keyAlphabet[firstCoords[0], firstCoords[1]]));
-                    else
-                        plaintext.Append(keyAlphabet[firstCoords[0], firstCoords[1]]);
-
-                    if (char.IsUpper(second.Value))
-                        plaintext.Append(char.ToUpper(keyAlphabet[secondCoords[0], secondCoords[1]]));
-                    else
-                        plaintext.Append(keyAlphabet[secondCoords[0], secondCoords[1]]);
-                    first = null;
-                    second = null;
+                    if (plaintext[plaintext.Length - 1] == 'z')
+                        plaintext.Remove(plaintext.Length - 1, 1);
+                    plaintext.Append(cipherText[i]);
                 }
+
             }
+
             if (plaintext[plaintext.Length - 1] == 'z')
                 plaintext.Remove(plaintext.Length - 1, 1);
             return plaintext.ToString();
+        }
+
+        private static void AppendDecryptedValues(char first, char second, Dictionary<char, int[]> charCoords, char[,] keyAlphabet, StringBuilder plaintext)
+        {
+            int[] firstCoords = (int[])charCoords[char.ToLower(first)].Clone();
+            int[] secondCoords = (int[])charCoords[char.ToLower(second)].Clone();
+            ProcessDecryptCoordinates(ref firstCoords, ref secondCoords, keyAlphabet);
+            if (char.IsUpper(first))
+                plaintext.Append(char.ToUpper(keyAlphabet[firstCoords[0], firstCoords[1]]));
+            else
+                plaintext.Append(keyAlphabet[firstCoords[0], firstCoords[1]]);
+
+            if (char.IsUpper(second))
+                plaintext.Append(char.ToUpper(keyAlphabet[secondCoords[0], secondCoords[1]]));
+            else
+                plaintext.Append(keyAlphabet[secondCoords[0], secondCoords[1]]);
         }
 
         private static void ProcessDecryptCoordinates(ref int[] firstCoords, ref int[] secondCoords, char[,] keyAlphabet)
