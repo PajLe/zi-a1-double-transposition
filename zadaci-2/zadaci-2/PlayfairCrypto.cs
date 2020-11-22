@@ -14,7 +14,15 @@ namespace zadaci_2
         public static void Encrypt(string plaintext, string key)
         {
             char[,] keyAlphabet = FormKeyAlphabet(key);
+            Dictionary<char, int[]> charCoords = FormCharCoordinatesDictionary(keyAlphabet);
 
+            StringBuilder cipherText = new StringBuilder();
+            for (int i = 0; i < plaintext.Length; i += 2)
+            {
+                char first = plaintext[i];
+                char second = (i + 1 == plaintext.Length) ? 'z' : plaintext[i + 1];
+
+            }
         }
 
         private static char[,] FormKeyAlphabet(string key)
@@ -58,6 +66,23 @@ namespace zadaci_2
 
             return keyAlphabet;
         }
+
+        private static Dictionary<char, int[]> FormCharCoordinatesDictionary(char[,] keyAlphabet)
+        {
+            Dictionary<char, int[]> charCoords = new Dictionary<char, int[]>();
+
+            for (int i = 0; i < keyAlphabet.GetLength(0); i++)
+            {
+                for (int j = 0; j < keyAlphabet.GetLength(1); j++)
+                {
+                    int[] coords = new int[] { i, j };
+                    charCoords.Add(keyAlphabet[i, j], coords);
+                }
+            }
+
+            return charCoords;
+        }
+
 
     }
 }
