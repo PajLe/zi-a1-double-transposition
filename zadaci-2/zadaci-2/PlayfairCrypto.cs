@@ -6,23 +6,75 @@ namespace zadaci_2
 {
     public static class PlayfairCrypto
     {
-        private static readonly char[] _alphabetWithoutLetterJ =
+        private static readonly List<char> _alphabetWithoutLetterJ = new List<char>
         {
             'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
         };
 
-        public static void Encrypt(string plaintext, string key)
+        public static string Encrypt(string plaintext, string key)
         {
             char[,] keyAlphabet = FormKeyAlphabet(key);
             Dictionary<char, int[]> charCoords = FormCharCoordinatesDictionary(keyAlphabet);
 
-            StringBuilder cipherText = new StringBuilder();
-            for (int i = 0; i < plaintext.Length; i += 2)
+            StringBuilder cipherText = new StringBuilder(plaintext.Length);
+            char? first = null, second = null;
+            for (int i = 0; i < plaintext.Length; i++)
             {
-                char first = plaintext[i];
-                char second = (i + 1 == plaintext.Length) ? 'z' : plaintext[i + 1];
+                char lowerChar = char.ToLower(plaintext[i]);
+                if (!_alphabetWithoutLetterJ.Contains(lowerChar))
+                {
+                    cipherText.Append(plaintext[i]);
+                }
+                else
+                {
+                    if (first == null)
+                        first = plaintext[i];
+                    else if (second == null)
+                        second = plaintext[i];
+                }
 
+                if (i == plaintext.Length - 1 && second == null)
+                    second = 'z';
+                
+                if (first.HasValue && second.HasValue)
+                {
+                    int[] firstCoords = charCoords[first.Value];
+                    int[] secondCoords = charCoords[second.Value];
+                    string crypted = ProcessCoordinates(firstCoords, secondCoords, keyAlphabet);
+                    cipherText.Append(crypted);
+                    first = null;
+                    second = null;
+                }
             }
+
+            return cipherText.ToString();
+        }
+
+        private static string ProcessCoordinates(int[] firstCoords, int[] secondCoords, char[,] keyAlphabet)
+        {
+            int firstRow = firstCoords[0],
+                firstColumn = firstCoords[1];
+            int secondRow = secondCoords[0],
+                secondColumn = secondCoords[1];
+
+            if (firstColumn == secondColumn) // If both the letters are in the same column
+            {
+                firstRow = (firstRow + 1) % keyAlphabet.GetLength(0);
+                secondRow = (secondRow + 1) % keyAlphabet.GetLength(0);
+            }
+            else if (firstRow == secondRow) // If both the letters are in the same row
+            {
+                firstColumn = (firstColumn + 1) % keyAlphabet.GetLength(1);
+                secondColumn = (secondColumn + 1) % keyAlphabet.GetLength(1);
+            }
+            else // If neither of the above rules is true
+            {
+                int p = firstColumn;
+                firstColumn = secondColumn;
+                secondColumn = p;
+            }
+
+            return string.Empty + keyAlphabet[firstRow, firstColumn] + keyAlphabet[secondRow, secondColumn];
         }
 
         private static char[,] FormKeyAlphabet(string key)
