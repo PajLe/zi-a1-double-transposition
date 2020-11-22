@@ -43,9 +43,9 @@ namespace zadaci_2
                 
                 if (first.HasValue && second.HasValue)
                 {
-                    int[] firstCoords = charCoords[char.ToLower(first.Value)];
-                    int[] secondCoords = charCoords[char.ToLower(second.Value)];
-                    ProcessCoordinates(ref firstCoords, ref secondCoords, keyAlphabet);
+                    int[] firstCoords = (int[])charCoords[char.ToLower(first.Value)].Clone();
+                    int[] secondCoords = (int[])charCoords[char.ToLower(second.Value)].Clone();
+                    ProcessEncryptCoordinates(ref firstCoords, ref secondCoords, keyAlphabet);
                     if (char.IsUpper(first.Value))
                         cipherText.Append(char.ToUpper(keyAlphabet[firstCoords[0], firstCoords[1]]));
                     else
@@ -63,7 +63,7 @@ namespace zadaci_2
             return cipherText.ToString();
         }
 
-        private static void ProcessCoordinates(ref int[] firstCoords, ref int[] secondCoords, char[,] keyAlphabet)
+        private static void ProcessEncryptCoordinates(ref int[] firstCoords, ref int[] secondCoords, char[,] keyAlphabet)
         {
             int firstRow = firstCoords[0],
                 firstColumn = firstCoords[1];
@@ -151,6 +151,80 @@ namespace zadaci_2
             return charCoords;
         }
 
+        public static string Decrypt(string cipherText, string key)
+        {
+            char[,] keyAlphabet = FormKeyAlphabet(key);
+            Dictionary<char, int[]> charCoords = FormCharCoordinatesDictionary(keyAlphabet);
 
+            StringBuilder plaintext = new StringBuilder(cipherText.Length);
+            char? first = null, second = null;
+            for (int i = 0; i < cipherText.Length; i++)
+            {
+                char lowerChar = char.ToLower(cipherText[i]);
+                if (!_alphabetWithoutLetterJ.Contains(lowerChar))
+                {
+                    plaintext.Append(cipherText[i]);
+                }
+                else
+                {
+                    char charToTake = cipherText[i];
+                    if (first == null)
+                        first = charToTake;
+                    else if (second == null)
+                        second = charToTake;
+                }
+
+                if (first.HasValue && second.HasValue)
+                {
+                    int[] firstCoords = (int[])charCoords[char.ToLower(first.Value)].Clone();
+                    int[] secondCoords = (int[])charCoords[char.ToLower(second.Value)].Clone();
+                    ProcessDecryptCoordinates(ref firstCoords, ref secondCoords, keyAlphabet);
+                    if (char.IsUpper(first.Value))
+                        plaintext.Append(char.ToUpper(keyAlphabet[firstCoords[0], firstCoords[1]]));
+                    else
+                        plaintext.Append(keyAlphabet[firstCoords[0], firstCoords[1]]);
+
+                    if (char.IsUpper(second.Value))
+                        plaintext.Append(char.ToUpper(keyAlphabet[secondCoords[0], secondCoords[1]]));
+                    else
+                        plaintext.Append(keyAlphabet[secondCoords[0], secondCoords[1]]);
+                    first = null;
+                    second = null;
+                }
+            }
+            if (plaintext[plaintext.Length - 1] == 'z')
+                plaintext.Remove(plaintext.Length - 1, 1);
+            return plaintext.ToString();
+        }
+
+        private static void ProcessDecryptCoordinates(ref int[] firstCoords, ref int[] secondCoords, char[,] keyAlphabet)
+        {
+            int firstRow = firstCoords[0],
+                firstColumn = firstCoords[1];
+            int secondRow = secondCoords[0],
+                secondColumn = secondCoords[1];
+
+            if (firstColumn == secondColumn) // If both the letters are in the same column
+            {
+                firstRow = (firstRow - 1).Mod(keyAlphabet.GetLength(0));
+                secondRow = (secondRow - 1).Mod(keyAlphabet.GetLength(0));
+            }
+            else if (firstRow == secondRow) // If both the letters are in the same row
+            {
+                firstColumn = (firstColumn - 1).Mod(keyAlphabet.GetLength(1));
+                secondColumn = (secondColumn - 1).Mod(keyAlphabet.GetLength(1));
+            }
+            else // If neither of the above rules is true
+            {
+                int p = firstColumn;
+                firstColumn = secondColumn;
+                secondColumn = p;
+            }
+
+            firstCoords[0] = firstRow;
+            firstCoords[1] = firstColumn;
+            secondCoords[0] = secondRow;
+            secondCoords[1] = secondColumn;
+        }
     }
 }
