@@ -48,5 +48,19 @@ namespace zadaci_2
             File.WriteAllText(path, Encoding.UTF8.GetString(bytes));
         }
 
+        public static void WriteBmpBytes(string path, byte[] originalBmp, byte[] cryptodBmp)
+        {
+            using (FileStream b = File.OpenWrite(path))
+            {
+                int pos = originalBmp[10] + 256 * (originalBmp[11] + 256 * (originalBmp[12] + 256 * originalBmp[13]));
+                for (int i = 0; i < originalBmp.Length; i++)
+                {
+                    if (i < pos)
+                        b.WriteByte(originalBmp[i]);
+                    else
+                        b.WriteByte(cryptodBmp[i]);
+                }
+            }
+        }
     }
 }
