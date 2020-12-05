@@ -48,7 +48,7 @@ namespace zadaci_2
             File.WriteAllText(path, Encoding.UTF8.GetString(bytes));
         }
 
-        public static void WriteBmpBytes(string path, byte[] originalBmp, byte[] cryptodBmp)
+        public static void WriteBmpBytes(string path, byte[] originalBmp, byte[] cryptedBmp)
         {
             using (FileStream b = File.OpenWrite(path))
             {
@@ -58,7 +58,7 @@ namespace zadaci_2
                     if (i < pos)
                         b.WriteByte(originalBmp[i]);
                     else
-                        b.WriteByte(cryptodBmp[i]);
+                        b.WriteByte(cryptedBmp[i]);
                 }
             }
         }
