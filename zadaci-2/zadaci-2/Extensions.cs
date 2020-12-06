@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -37,6 +38,36 @@ namespace zadaci_2
                     array[i] = array[i - 1];
                 array[0] = lastElement;
             }
+        }
+
+        public static void AppendBit(this BitArray bitArray, bool bit)
+        {
+            bitArray.Length++;
+            bitArray.Set(bitArray.Length - 1, bit);
+        }
+
+        public static void AppendByte(this BitArray bitArray, byte b)
+        {
+            BitArray byteBitArray = new BitArray(new byte[] { b });
+            for (int i = 0; i < 8; i++)
+                bitArray.AppendBit(byteBitArray[0]);
+        }
+
+        public static void AppendBytes(this BitArray bitArray, byte[] bytes)
+        {
+            foreach (var b in bytes)
+                bitArray.AppendByte(b);
+        }
+
+        public static uint ToUInt(this BitArray bitArray, int startPos)
+        {
+            BitArray uintBitArray = new BitArray(32);
+            for (int i = 0; i < 32; i++)
+                uintBitArray[i] = bitArray[startPos++];
+
+            uint[] arr = new uint[1];
+            uintBitArray.CopyTo(arr, 0);
+            return arr[0];
         }
     }
 }
