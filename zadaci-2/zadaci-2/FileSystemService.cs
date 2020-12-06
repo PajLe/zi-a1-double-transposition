@@ -64,7 +64,7 @@ namespace zadaci_2
             }
         }
 
-        public static async IAsyncEnumerable<byte[]> ReadFileTenMegabytesAtTheTime(string inputFilePath)
+        public static IEnumerable<byte[]> ReadFileTenMegabytesAtTheTime(string inputFilePath)
         {
             int tenMegabytes = 10485760;
 
@@ -74,7 +74,7 @@ namespace zadaci_2
                 do
                 {
                     byte[] readBuffer = new byte[tenMegabytes];
-                    read = await f.ReadAsync(readBuffer, 0, tenMegabytes);
+                    read = f.Read(readBuffer, 0, tenMegabytes);
                     byte[] readBytes = new byte[read];
                     Array.Copy(readBuffer, readBytes, read);
                     if (read > 0) 

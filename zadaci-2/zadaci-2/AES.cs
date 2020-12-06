@@ -51,7 +51,7 @@ namespace zadaci_2
         };
 
 
-        public static async Task AESCrypt(string inputFilePath, byte[] key, string outputFilePath)
+        public static void AESCrypt(string inputFilePath, byte[] key, string outputFilePath)
         {
             if (key.Length != 16)
                 throw new ArgumentException("Key has to be 16 bytes", nameof(key));
@@ -59,11 +59,10 @@ namespace zadaci_2
             byte[] keyCopy = new byte[key.Length];
             key.CopyTo(keyCopy, 0);
 
-            IList<Task> writeTasks = new List<Task>();
             using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
             {
                 int indexOfReadBytes = 0;
-                await foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtTheTime(inputFilePath))
+                foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtTheTime(inputFilePath))
                 {
                     int remainderDividingBy16 = byteArray10MB.Length % 16;
                     byte[] bytesToWrite10MB = new byte[byteArray10MB.Length];
@@ -91,8 +90,7 @@ namespace zadaci_2
                         remainderDividingBy16--;
                     }
 
-                    Task.WaitAll();
-                    writeTasks.Add(WriteCryptedBytes(fw, bytesToWrite10MB));
+                    WriteCryptedBytes(fw, bytesToWrite10MB);
                     indexOfReadBytes++;
                     Console.WriteLine(" - written - " + bytesToWrite10MB.Length + " - " + indexOfReadBytes);
                 }
@@ -154,9 +152,9 @@ namespace zadaci_2
             return array;
         }
 
-        private static async Task WriteCryptedBytes(FileStream fw, byte[] cryptedBytes)
+        private static void WriteCryptedBytes(FileStream fw, byte[] cryptedBytes)
         {
-            await fw.WriteAsync(cryptedBytes, 0, cryptedBytes.Length);
+            fw.Write(cryptedBytes, 0, cryptedBytes.Length);
         }
 
         private static byte[][] CreateInputMatrix4By4(byte[] sourceBytes, int startPos)
