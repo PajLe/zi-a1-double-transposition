@@ -16,5 +16,16 @@ namespace zadaci_2
         }
 
         public static int Mod(this int k, int n) { return ((k %= n) < 0) ? k + n : k; }
+
+        public static void ShiftLeft<T>(this T[] array, int positions)
+        {
+            for (int j = 0; j < positions; j++)
+            {
+                T firstElement = array[0];
+                for (int i = 0; i < array.Length - 1; i++)
+                    array[i] = array[i + 1];
+                array[array.Length - 1] = firstElement;
+            }
+        }
     }
 }

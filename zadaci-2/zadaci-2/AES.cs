@@ -69,7 +69,7 @@ namespace zadaci_2
                     byte[] bytesToWrite10MB = new byte[byteArray10MB.Length];
                     for (int i = 0; i < byteArray10MB.Length - remainderDividingBy16; i += 16)
                     {
-                        byte[,] inputMatrix = CreateInputMatrix4By4(byteArray10MB, i);
+                        byte[][] inputMatrix = CreateInputMatrix4By4(byteArray10MB, i);
                         AddRoundKey(inputMatrix, keyCopy);
 
                         for (int round = 1; round <= 13; round++)
@@ -100,30 +100,34 @@ namespace zadaci_2
 
         }
 
-        private static void MixColumns(byte[,] inputMatrix)
+        private static void MixColumns(byte[][] inputMatrix)
         {
         }
 
-        private static void ShiftRows(byte[,] inputMatrix)
+        private static void ShiftRows(byte[][] inputMatrix)
+        {
+            for (int i = 1; i < 4; i++)
+                inputMatrix[i].ShiftLeft(i);
+        }
+
+        private static void SubBytes(byte[][] inputMatrix)
+        {
+            for (int i = 0; i < 4; i++)
+                for (int j = 0; j < 4; j++)
+                    inputMatrix[i][j] = SBox[inputMatrix[i][j]];
+        }
+
+        private static void AddRoundKey(byte[][] inputMatrix, byte[] keyCopy)
         {
         }
 
-        private static void SubBytes(byte[,] inputMatrix)
-        {
-
-        }
-
-        private static void AddRoundKey(byte[,] inputMatrix, byte[] keyCopy)
-        {
-        }
-
-        private static byte[] CryptedMatrixToArray(byte[,] cryptedMatrix4x4)
+        private static byte[] CryptedMatrixToArray(byte[][] cryptedMatrix4x4)
         {
             byte[] array = new byte[16];
             int arrayIndex = 0;
             for (int i = 0; i < 4; i++)
                 for (int j = 0; j < 4; j++)
-                    array[arrayIndex++] = cryptedMatrix4x4[i, j];
+                    array[arrayIndex++] = cryptedMatrix4x4[i][j];
 
             return array;
         }
@@ -133,12 +137,16 @@ namespace zadaci_2
             await fw.WriteAsync(cryptedBytes, 0, cryptedBytes.Length);
         }
 
-        private static byte[,] CreateInputMatrix4By4(byte[] sourceBytes, int startPos)
+        private static byte[][] CreateInputMatrix4By4(byte[] sourceBytes, int startPos)
         {
-            byte[,] matrix4x4 = new byte[4, 4];
+            byte[][] matrix4x4 = new byte[4][];
             for (int i = 0; i < 4; i++)
+            {
+                matrix4x4[i] = new byte[4];
+
                 for (int j = 0; j < 4; j++)
-                    matrix4x4[i, j] = sourceBytes[startPos++];
+                    matrix4x4[i][j] = sourceBytes[startPos++];
+            }
 
             return matrix4x4;
         }
