@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace zadaci_2
 {
@@ -60,6 +61,26 @@ namespace zadaci_2
                     else
                         b.WriteByte(cryptedBmp[i]);
                 }
+            }
+        }
+
+        public static async IAsyncEnumerable<byte[]> ReadFileTenMegabytesAtTheTime(string inputFilePath)
+        {
+            int tenMegabytes = 10485760;
+
+            using (FileStream f = new FileStream(inputFilePath, FileMode.Open))
+            {
+                int read = 0;
+                do
+                {
+                    byte[] readBuffer = new byte[tenMegabytes];
+                    read = await f.ReadAsync(readBuffer, 0, tenMegabytes);
+                    byte[] readBytes = new byte[read];
+                    Array.Copy(readBuffer, readBytes, read);
+                    if (read > 0) 
+                        yield return readBytes;
+                }
+                while (read > 0);
             }
         }
     }
