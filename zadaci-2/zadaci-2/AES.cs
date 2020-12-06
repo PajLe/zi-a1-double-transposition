@@ -83,7 +83,7 @@ namespace zadaci_2
                         SubBytes(inputMatrix);
                         ShiftRows(inputMatrix);
                         AddRoundKey(inputMatrix, keyCopy);
-                        Array.Copy(CryptedMatrixToArray(inputMatrix), 0, bytesToWrite10MB, i, 16);
+                        Array.Copy(CryptoMatrixToArray(inputMatrix), 0, bytesToWrite10MB, i, 16);
                     }
                     while (remainderDividingBy16 > 0)
                     {
@@ -92,9 +92,9 @@ namespace zadaci_2
                     }
 
                     Task.WaitAll();
-                    writeTasks.Add(WriteCryptedBytes(fw, bytesToWrite10MB));
+                    writeTasks.Add(WriteCryptoBytes(fw, bytesToWrite10MB));
                     indexOfReadBytes++;
-                    Console.WriteLine(" - written - " + bytesToWrite10MB.Length + " - " + indexOfReadBytes);
+                    Console.WriteLine(" - encrypt written - " + bytesToWrite10MB.Length + " - " + indexOfReadBytes);
                 }
             }
 
@@ -109,10 +109,10 @@ namespace zadaci_2
                 byte a2 = inputMatrix[2][j];
                 byte a3 = inputMatrix[3][j];
 
-                byte r0 = (byte)(gfmultby02(a0) + gfmultby01(a3) + gfmultby01(a2) + gfmultby03(a1));
-                byte r1 = (byte)(gfmultby02(a1) + gfmultby01(a0) + gfmultby01(a3) + gfmultby03(a2));
-                byte r2 = (byte)(gfmultby02(a2) + gfmultby01(a1) + gfmultby01(a0) + gfmultby03(a3));
-                byte r3 = (byte)(gfmultby02(a3) + gfmultby01(a2) + gfmultby01(a1) + gfmultby03(a0));
+                byte r0 = (byte)(gfmultby02(a0) ^ gfmultby01(a3) ^ gfmultby01(a2) ^ gfmultby03(a1));
+                byte r1 = (byte)(gfmultby02(a1) ^ gfmultby01(a0) ^ gfmultby01(a3) ^ gfmultby03(a2));
+                byte r2 = (byte)(gfmultby02(a2) ^ gfmultby01(a1) ^ gfmultby01(a0) ^ gfmultby03(a3));
+                byte r3 = (byte)(gfmultby02(a3) ^ gfmultby01(a2) ^ gfmultby01(a1) ^ gfmultby03(a0));
 
                 inputMatrix[0][j] = r0;
                 inputMatrix[1][j] = r1;
@@ -143,20 +143,20 @@ namespace zadaci_2
             keyCopy.ShiftLeft(1); // keyschedule
         }
 
-        private static byte[] CryptedMatrixToArray(byte[][] cryptedMatrix4x4)
+        private static byte[] CryptoMatrixToArray(byte[][] cryptoMatrix4x4)
         {
             byte[] array = new byte[16];
             int arrayIndex = 0;
             for (int i = 0; i < 4; i++)
                 for (int j = 0; j < 4; j++)
-                    array[arrayIndex++] = cryptedMatrix4x4[i][j];
+                    array[arrayIndex++] = cryptoMatrix4x4[i][j];
 
             return array;
         }
 
-        private static async Task WriteCryptedBytes(FileStream fw, byte[] cryptedBytes)
+        private static async Task WriteCryptoBytes(FileStream fw, byte[] cryptoBytes)
         {
-            await fw.WriteAsync(cryptedBytes, 0, cryptedBytes.Length);
+            await fw.WriteAsync(cryptoBytes, 0, cryptoBytes.Length);
         }
 
         private static byte[][] CreateInputMatrix4By4(byte[] sourceBytes, int startPos)
@@ -216,6 +216,98 @@ namespace zadaci_2
             return (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^
                 (int)gfmultby02(gfmultby02(b)) ^
                 (int)gfmultby02(b));
+        }
+
+        public static async Task AESDecrypt(string inputFilePath, byte[] key, string outputFilePath)
+        {
+            if (key.Length != 16)
+                throw new ArgumentException("Key has to be 16 bytes", nameof(key));
+
+            byte[] keyCopy = new byte[key.Length];
+            key.CopyTo(keyCopy, 0);
+
+            IList<Task> writeTasks = new List<Task>();
+            using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
+            {
+                int indexOfReadBytes = 0;
+                await foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtTheTime(inputFilePath))
+                {
+                    int remainderDividingBy16 = byteArray10MB.Length % 16;
+                    byte[] bytesToWrite10MB = new byte[byteArray10MB.Length];
+                    for (int i = 0; i < byteArray10MB.Length - remainderDividingBy16; i += 16)
+                    {
+                        byte[][] inputMatrix = CreateInputMatrix4By4(byteArray10MB, i);
+                        keyCopy.ShiftRight(2);
+                        AddRoundKeyInverse(inputMatrix, keyCopy);
+
+                        for (int round = 1; round <= 13; round++)
+                        {
+                            ShiftRowsInverse(inputMatrix);
+                            SubBytesInverse(inputMatrix);
+                            AddRoundKeyInverse(inputMatrix, keyCopy);
+                            MixColumnsInverse(inputMatrix);
+                        }
+
+                        ShiftRowsInverse(inputMatrix);
+                        SubBytesInverse(inputMatrix);
+                        AddRoundKeyInverse(inputMatrix, keyCopy);
+                        Array.Copy(CryptoMatrixToArray(inputMatrix), 0, bytesToWrite10MB, i, 16);
+                    }
+                    while (remainderDividingBy16 > 0)
+                    {
+                        bytesToWrite10MB[byteArray10MB.Length - remainderDividingBy16] = byteArray10MB[byteArray10MB.Length - remainderDividingBy16];
+                        remainderDividingBy16--;
+                    }
+
+                    Task.WaitAll();
+                    writeTasks.Add(WriteCryptoBytes(fw, bytesToWrite10MB));
+                    indexOfReadBytes++;
+                    Console.WriteLine(" - decrypt written - " + bytesToWrite10MB.Length + " - " + indexOfReadBytes);
+                }
+            }
+        }
+
+        private static void MixColumnsInverse(byte[][] inputMatrix)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                byte a0 = inputMatrix[0][j];
+                byte a1 = inputMatrix[1][j];
+                byte a2 = inputMatrix[2][j];
+                byte a3 = inputMatrix[3][j];
+
+                byte r0 = (byte)(gfmultby0e(a0) ^ gfmultby09(a3) ^ gfmultby0d(a2) ^ gfmultby0b(a1));
+                byte r1 = (byte)(gfmultby0e(a1) ^ gfmultby09(a0) ^ gfmultby0d(a3) ^ gfmultby0b(a2));
+                byte r2 = (byte)(gfmultby0e(a2) ^ gfmultby09(a1) ^ gfmultby0d(a0) ^ gfmultby0b(a3));
+                byte r3 = (byte)(gfmultby0e(a3) ^ gfmultby09(a2) ^ gfmultby0d(a1) ^ gfmultby0b(a0));
+
+                inputMatrix[0][j] = r0;
+                inputMatrix[1][j] = r1;
+                inputMatrix[2][j] = r2;
+                inputMatrix[3][j] = r3;
+            }
+        }
+
+        private static void SubBytesInverse(byte[][] inputMatrix)
+        {
+            for (int i = 0; i < 4; i++)
+                for (int j = 0; j < 4; j++)
+                    inputMatrix[i][j] = SBoxInvert[inputMatrix[i][j]];
+        }
+
+        private static void ShiftRowsInverse(byte[][] inputMatrix)
+        {
+            for (int i = 1; i < 4; i++)
+                inputMatrix[i].ShiftRight(i);
+        }
+
+        private static void AddRoundKeyInverse(byte[][] inputMatrix, byte[] keyCopy)
+        {
+            for (int i = 0; i < 4; i++)
+                for (int j = 0; j < 4; j++)
+                    inputMatrix[i][j] = (byte)(inputMatrix[i][j] ^ keyCopy[i * 4 + j]);
+
+            keyCopy.ShiftRight(1); // reverse keyschedule
         }
     }
 }

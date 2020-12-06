@@ -27,5 +27,16 @@ namespace zadaci_2
                 array[array.Length - 1] = firstElement;
             }
         }
+
+        public static void ShiftRight<T>(this T[] array, int positions)
+        {
+            for (int j = 0; j < positions; j++)
+            {
+                T lastElement = array[array.Length - 1];
+                for (int i = array.Length - 1; i > 0; i--)
+                    array[i] = array[i - 1];
+                array[0] = lastElement;
+            }
+        }
     }
 }
