@@ -136,6 +136,11 @@ namespace zadaci_2
 
         private static void AddRoundKey(byte[][] inputMatrix, byte[] keyCopy)
         {
+            for (int i = 0; i < 4; i++)
+                for (int j = 0; j < 4; j++)
+                    inputMatrix[i][j] = (byte)(inputMatrix[i][j] ^ keyCopy[i * 4 + j]);
+
+            keyCopy.ShiftLeft(1); // keyschedule
         }
 
         private static byte[] CryptedMatrixToArray(byte[][] cryptedMatrix4x4)
