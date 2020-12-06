@@ -102,6 +102,23 @@ namespace zadaci_2
 
         private static void MixColumns(byte[][] inputMatrix)
         {
+            for (int j = 0; j < 4; j++)
+            {
+                byte a0 = inputMatrix[0][j];
+                byte a1 = inputMatrix[1][j];
+                byte a2 = inputMatrix[2][j];
+                byte a3 = inputMatrix[3][j];
+
+                byte r0 = (byte)(gfmultby02(a0) + gfmultby01(a3) + gfmultby01(a2) + gfmultby03(a1));
+                byte r1 = (byte)(gfmultby02(a1) + gfmultby01(a0) + gfmultby01(a3) + gfmultby03(a2));
+                byte r2 = (byte)(gfmultby02(a2) + gfmultby01(a1) + gfmultby01(a0) + gfmultby03(a3));
+                byte r3 = (byte)(gfmultby02(a3) + gfmultby01(a2) + gfmultby01(a1) + gfmultby03(a0));
+
+                inputMatrix[0][j] = r0;
+                inputMatrix[1][j] = r1;
+                inputMatrix[2][j] = r2;
+                inputMatrix[3][j] = r3;
+            }
         }
 
         private static void ShiftRows(byte[][] inputMatrix)
@@ -149,6 +166,51 @@ namespace zadaci_2
             }
 
             return matrix4x4;
+        }
+
+        private static byte gfmultby01(byte b)
+        {
+            return b;
+        }
+
+        private static byte gfmultby02(byte b)
+        {
+            if (b < 0x80)
+                return (byte)(int)(b << 1);
+            else
+                return (byte)((int)(b << 1) ^ (int)(0x1b));
+        }
+
+        private static byte gfmultby03(byte b)
+        {
+            return (byte)((int)gfmultby02(b) ^ (int)b);
+        }
+
+        private static byte gfmultby09(byte b)
+        {
+            return (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^
+                (int)b);
+        }
+
+        private static byte gfmultby0b(byte b)
+        {
+            return (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^
+                (int)gfmultby02(b) ^
+                (int)b);
+        }
+
+        private static byte gfmultby0d(byte b)
+        {
+            return (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^
+                (int)gfmultby02(gfmultby02(b)) ^
+                (int)(b));
+        }
+
+        private static byte gfmultby0e(byte b)
+        {
+            return (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^
+                (int)gfmultby02(gfmultby02(b)) ^
+                (int)gfmultby02(b));
         }
     }
 }
