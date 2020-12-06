@@ -27,7 +27,7 @@ namespace zadaci_2
 											/*e*/  {0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf},
 											/*f*/  {0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16} };
 
-		private static readonly byte[,] SBoxInvert = {  // populate the iSbox matrix
+        private static readonly byte[,] SBoxInvert = {  // populate the iSbox matrix
 											 /* 0     1     2     3     4     5     6     7     8     9     a     b     c     d     e     f */
 											 /*0*/  {0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb},
 											 /*1*/  {0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87, 0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde, 0xe9, 0xcb},
@@ -46,53 +46,53 @@ namespace zadaci_2
 											 /*e*/  {0xa0, 0xe0, 0x3b, 0x4d, 0xae, 0x2a, 0xf5, 0xb0, 0xc8, 0xeb, 0xbb, 0x3c, 0x83, 0x53, 0x99, 0x61},
 											 /*f*/  {0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d} };
 
-		public static async Task AESCrypt(string inputFilePath, byte[] key, string outputFilePath)
+        public static async Task AESCrypt(string inputFilePath, byte[] key, string outputFilePath)
         {
-			if (key.Length != 16)
-				throw new ArgumentException("Key has to be 16 bytes", nameof(key));
+            if (key.Length != 16)
+                throw new ArgumentException("Key has to be 16 bytes", nameof(key));
 
-			byte[] keyCopy = new byte[key.Length];
-			key.CopyTo(keyCopy, 0);
+            byte[] keyCopy = new byte[key.Length];
+            key.CopyTo(keyCopy, 0);
 
-			IList<Task> writeTasks = new List<Task>();
-			using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
+            IList<Task> writeTasks = new List<Task>();
+            using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
             {
-				int indexOfReadBytes = 0;
-				await foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtTheTime(inputFilePath))
+                int indexOfReadBytes = 0;
+                await foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtTheTime(inputFilePath))
                 {
-					int remainderDividingBy16 = byteArray10MB.Length % 16;
-					byte[] bytesToWrite10MB = new byte[byteArray10MB.Length];
-					for (int i = 0; i < byteArray10MB.Length - remainderDividingBy16; i += 16) 
+                    int remainderDividingBy16 = byteArray10MB.Length % 16;
+                    byte[] bytesToWrite10MB = new byte[byteArray10MB.Length];
+                    for (int i = 0; i < byteArray10MB.Length - remainderDividingBy16; i += 16)
                     {
-						byte[,] inputMatrix = CreateInputMatrix4By4(byteArray10MB, i);
-						AddRoundKey(inputMatrix, keyCopy);
+                        byte[,] inputMatrix = CreateInputMatrix4By4(byteArray10MB, i);
+                        AddRoundKey(inputMatrix, keyCopy);
 
-						for (int round = 1; round <= 13; round++)
+                        for (int round = 1; round <= 13; round++)
                         {
-							SubBytes(inputMatrix);
-							ShiftRows(inputMatrix);
-							MixColumns(inputMatrix);
-							AddRoundKey(inputMatrix, keyCopy);
+                            SubBytes(inputMatrix);
+                            ShiftRows(inputMatrix);
+                            MixColumns(inputMatrix);
+                            AddRoundKey(inputMatrix, keyCopy);
                         }
 
-						SubBytes(inputMatrix);
-						ShiftRows(inputMatrix);
-						AddRoundKey(inputMatrix, keyCopy);
-						Array.Copy(CryptedMatrixToArray(inputMatrix), 0, bytesToWrite10MB, i, 16);
-					}
-					while (remainderDividingBy16 > 0)
+                        SubBytes(inputMatrix);
+                        ShiftRows(inputMatrix);
+                        AddRoundKey(inputMatrix, keyCopy);
+                        Array.Copy(CryptedMatrixToArray(inputMatrix), 0, bytesToWrite10MB, i, 16);
+                    }
+                    while (remainderDividingBy16 > 0)
                     {
-						bytesToWrite10MB[byteArray10MB.Length - remainderDividingBy16] = byteArray10MB[byteArray10MB.Length - remainderDividingBy16];
-						remainderDividingBy16--;
+                        bytesToWrite10MB[byteArray10MB.Length - remainderDividingBy16] = byteArray10MB[byteArray10MB.Length - remainderDividingBy16];
+                        remainderDividingBy16--;
                     }
 
-					Task.WaitAll();
-					writeTasks.Add(WriteCryptedBytes(fw, bytesToWrite10MB));
-					indexOfReadBytes++;
-					Console.WriteLine(" - written - " + bytesToWrite10MB.Length + " - " + indexOfReadBytes);
-				}
-			}
-			
+                    Task.WaitAll();
+                    writeTasks.Add(WriteCryptedBytes(fw, bytesToWrite10MB));
+                    indexOfReadBytes++;
+                    Console.WriteLine(" - written - " + bytesToWrite10MB.Length + " - " + indexOfReadBytes);
+                }
+            }
+
         }
 
         private static void MixColumns(byte[,] inputMatrix)
@@ -111,30 +111,30 @@ namespace zadaci_2
         {
         }
 
-		private static byte[] CryptedMatrixToArray(byte[,] cryptedMatrix4x4)
+        private static byte[] CryptedMatrixToArray(byte[,] cryptedMatrix4x4)
         {
-			byte[] array = new byte[16];
-			int arrayIndex = 0;
-			for (int i = 0; i < 4; i++)
-				for (int j = 0; j < 4; j++)
-					array[arrayIndex++] = cryptedMatrix4x4[i, j];
+            byte[] array = new byte[16];
+            int arrayIndex = 0;
+            for (int i = 0; i < 4; i++)
+                for (int j = 0; j < 4; j++)
+                    array[arrayIndex++] = cryptedMatrix4x4[i, j];
 
-			return array;
+            return array;
         }
 
         private static async Task WriteCryptedBytes(FileStream fw, byte[] cryptedBytes)
         {
-			await fw.WriteAsync(cryptedBytes, 0, cryptedBytes.Length);
+            await fw.WriteAsync(cryptedBytes, 0, cryptedBytes.Length);
         }
 
         private static byte[,] CreateInputMatrix4By4(byte[] sourceBytes, int startPos)
         {
-			byte[,] matrix4x4 = new byte[4, 4];
-			for (int i = 0; i < 4; i++)
-				for (int j = 0; j < 4; j++)
-					matrix4x4[i, j] = sourceBytes[startPos++];
+            byte[,] matrix4x4 = new byte[4, 4];
+            for (int i = 0; i < 4; i++)
+                for (int j = 0; j < 4; j++)
+                    matrix4x4[i, j] = sourceBytes[startPos++];
 
-			return matrix4x4;
+            return matrix4x4;
         }
-	}
+    }
 }
