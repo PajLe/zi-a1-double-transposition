@@ -63,7 +63,7 @@ namespace zadaci_2
             using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
             {
                 int indexOfReadBytes = 0;
-                await foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtTheTime(inputFilePath))
+                await foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtATime(inputFilePath))
                 {
                     int remainderDividingBy16 = byteArray10MB.Length % 16;
                     byte[] bytesToWrite10MB = new byte[byteArray10MB.Length];
@@ -230,7 +230,7 @@ namespace zadaci_2
             using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
             {
                 int indexOfReadBytes = 0;
-                await foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtTheTime(inputFilePath))
+                await foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtATime(inputFilePath))
                 {
                     int remainderDividingBy16 = byteArray10MB.Length % 16;
                     byte[] bytesToWrite10MB = new byte[byteArray10MB.Length];
