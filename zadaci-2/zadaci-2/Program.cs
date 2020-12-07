@@ -43,7 +43,7 @@ namespace zadaci_2
             await AES.AESCrypt(Constants.TestFilesPath + "100MB.zip", key, Constants.Results_A3_2_FilesPath + "100MB_encrypted.zip");
             await AES.AESDecrypt(Constants.Results_A3_2_FilesPath + "100MB_encrypted.zip", key, Constants.Results_A3_2_FilesPath + "100MB_decrypted.zip");
             Console.WriteLine(await MD5.MD5Hash(Constants.TestFilesPath + "100MB.zip"));
-            Console.WriteLine(await MD5.MD5Hash(Constants.Results_A3_2_FilesPath + "100MB_decrypted.bmp"));
+            Console.WriteLine(await MD5.MD5Hash(Constants.Results_A3_2_FilesPath + "100MB_decrypted.zip"));
 
             // file 1GB and check if MD5 hash is equal
             //await AES.AESCrypt(Constants.TestFilesPath + "1GB.zip", key, Constants.Results_A3_2_FilesPath + "1GB_encrypted.zip");
