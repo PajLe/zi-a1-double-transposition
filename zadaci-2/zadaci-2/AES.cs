@@ -62,71 +62,37 @@ namespace zadaci_2
         {
             if (key.Length != 16)
                 throw new ArgumentException("Key has to be 16 bytes", nameof(key));
+            Stopwatch s = new Stopwatch();
+            s.Start();
 
             byte[] keyCopy = new byte[key.Length];
             key.CopyTo(keyCopy, 0);
-            TimeSpan totalElapsed = new TimeSpan();
-            TimeSpan subBytes = new TimeSpan(),
-                createInputMatrix = new TimeSpan(), 
-                shiftRows = new TimeSpan(),
-                mixColumns = new TimeSpan(),
-                addRoundKey = new TimeSpan(),
-                cryptoMatrixToArray = new TimeSpan();
+            string outputFileName = Path.GetFileName(outputFilePath);
             IList<Task> writeTasks = new List<Task>();
             using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
             {
                 int indexOfReadBytes = 0;
                 await foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtATime(inputFilePath))
                 {
-                    Stopwatch s = new Stopwatch();
-                    Stopwatch privateMethodsStopwatch = new Stopwatch();
-                    s.Start();
                     int remainderDividingBy16 = byteArray10MB.Length % 16;
                     byte[] bytesToWrite10MB = new byte[byteArray10MB.Length];
                     for (int i = 0; i < byteArray10MB.Length - remainderDividingBy16; i += 16)
                     {
-                        privateMethodsStopwatch.Start();
                         byte[][] inputMatrix = CreateInputMatrix4By4(byteArray10MB, i);
-                        createInputMatrix = createInputMatrix.Add(privateMethodsStopwatch.Elapsed);
-
-                        privateMethodsStopwatch.Restart();
                         AddRoundKey(inputMatrix, keyCopy);
-                        addRoundKey = addRoundKey.Add(privateMethodsStopwatch.Elapsed);
 
                         for (int round = 1; round <= 13; round++)
                         {
-                            privateMethodsStopwatch.Restart();
                             SubBytes(inputMatrix);
-                            subBytes = subBytes.Add(privateMethodsStopwatch.Elapsed);
-
-                            privateMethodsStopwatch.Restart();
                             ShiftRows(inputMatrix);
-                            shiftRows = shiftRows.Add(privateMethodsStopwatch.Elapsed);
-
-                            privateMethodsStopwatch.Restart();
                             MixColumns(inputMatrix);
-                            mixColumns = mixColumns.Add(privateMethodsStopwatch.Elapsed);
-
-                            privateMethodsStopwatch.Restart();
                             AddRoundKey(inputMatrix, keyCopy);
-                            addRoundKey = addRoundKey.Add(privateMethodsStopwatch.Elapsed);
                         }
 
-                        privateMethodsStopwatch.Restart();
                         SubBytes(inputMatrix);
-                        subBytes = subBytes.Add(privateMethodsStopwatch.Elapsed);
-
-                        privateMethodsStopwatch.Restart();
                         ShiftRows(inputMatrix);
-                        shiftRows = shiftRows.Add(privateMethodsStopwatch.Elapsed);
-
-                        privateMethodsStopwatch.Restart();
                         AddRoundKey(inputMatrix, keyCopy);
-                        addRoundKey = addRoundKey.Add(privateMethodsStopwatch.Elapsed);
-
-                        privateMethodsStopwatch.Restart();
                         Array.Copy(CryptoMatrixToArray(inputMatrix), 0, bytesToWrite10MB, i, 16);
-                        cryptoMatrixToArray = cryptoMatrixToArray.Add(privateMethodsStopwatch.Elapsed);
                     }
                     while (remainderDividingBy16 > 0)
                     {
@@ -134,20 +100,14 @@ namespace zadaci_2
                         remainderDividingBy16--;
                     }
                     s.Stop();
-                    Console.WriteLine(" - encrypt processed 10MB - " + Path.GetFileName(outputFilePath) + " - " + bytesToWrite10MB.Length + " - elapsed: " + s.Elapsed + " - " + indexOfReadBytes);
-                    totalElapsed = totalElapsed.Add(s.Elapsed);
+                    Console.WriteLine(" - encrypt processed 10MB - " + bytesToWrite10MB.Length + " - " + outputFileName + " - elapsed: " + s.Elapsed + " - " + indexOfReadBytes);
                     writeTasks.Add(WriteCryptoBytes(fw, bytesToWrite10MB));
                     indexOfReadBytes++;
                 }
                 await Task.WhenAll(writeTasks);
             }
-            Console.WriteLine("--------------------------total elapsed: " + totalElapsed);
-            Console.WriteLine("\t\t sub bytes: " + subBytes);
-            Console.WriteLine("\t\t createInputMatrix: " + createInputMatrix);
-            Console.WriteLine("\t\t shiftRows: " + shiftRows);
-            Console.WriteLine("\t\t mixColumns: " + mixColumns);
-            Console.WriteLine("\t\t addRoundKey: " + addRoundKey);
-            Console.WriteLine("\t\t cryptoMatrixToArray: " + cryptoMatrixToArray);
+            s.Stop();
+            Console.WriteLine("--------------------------total encrypt time: " + s.Elapsed);
         }
 
         private static void MixColumns(byte[][] inputMatrix)
@@ -206,11 +166,7 @@ namespace zadaci_2
 
         private static async Task WriteCryptoBytes(FileStream fw, byte[] cryptoBytes)
         {
-            Stopwatch s = new Stopwatch();
-            s.Start();
             await fw.WriteAsync(cryptoBytes, 0, cryptoBytes.Length);
-            s.Stop();
-            Console.WriteLine("\twrite elapsed: " + s.Elapsed);
         }
 
         private static byte[][] CreateInputMatrix4By4(byte[] sourceBytes, int startPos)
@@ -335,94 +291,52 @@ namespace zadaci_2
         {
             if (key.Length != 16)
                 throw new ArgumentException("Key has to be 16 bytes", nameof(key));
+            Stopwatch s = new Stopwatch();
+            s.Start();
 
             byte[] keyCopy = new byte[key.Length];
             key.CopyTo(keyCopy, 0);
             IList<Task> writeTasks = new List<Task>();
-            TimeSpan totalElapsed = new TimeSpan();
-            TimeSpan subBytes = new TimeSpan(),
-                createInputMatrix = new TimeSpan(),
-                shiftRows = new TimeSpan(),
-                mixColumns = new TimeSpan(),
-                addRoundKey = new TimeSpan(),
-                cryptoMatrixToArray = new TimeSpan();
+            string outputFileName = Path.GetFileName(outputFilePath);
             using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
             {
                 int indexOfReadBytes = 0;
                 await foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtATime(inputFilePath))
                 {
-                    Stopwatch privateMethodsStopwatch = new Stopwatch();
-                    Stopwatch s = new Stopwatch();
-                    s.Start();
-
                     int remainderDividingBy16 = byteArray10MB.Length % 16;
                     byte[] bytesToWrite10MB = new byte[byteArray10MB.Length];
                     for (int i = 0; i < byteArray10MB.Length - remainderDividingBy16; i += 16)
                     {
-                        privateMethodsStopwatch.Start();
                         byte[][] inputMatrix = CreateInputMatrix4By4(byteArray10MB, i);
-                        createInputMatrix = createInputMatrix.Add(privateMethodsStopwatch.Elapsed);
-
-                        privateMethodsStopwatch.Restart();
                         keyCopy.ShiftRight(2);
                         AddRoundKeyInverse(inputMatrix, keyCopy);
-                        addRoundKey = addRoundKey.Add(privateMethodsStopwatch.Elapsed);
 
                         for (int round = 1; round <= 13; round++)
                         {
-                            privateMethodsStopwatch.Restart();
                             ShiftRowsInverse(inputMatrix);
-                            shiftRows = shiftRows.Add(privateMethodsStopwatch.Elapsed);
-
-                            privateMethodsStopwatch.Restart();
                             SubBytesInverse(inputMatrix);
-                            subBytes = subBytes.Add(privateMethodsStopwatch.Elapsed);
-
-                            privateMethodsStopwatch.Restart();
                             AddRoundKeyInverse(inputMatrix, keyCopy);
-                            addRoundKey = addRoundKey.Add(privateMethodsStopwatch.Elapsed);
-
-                            privateMethodsStopwatch.Restart();
                             MixColumnsInverse(inputMatrix);
-                            mixColumns = mixColumns.Add(privateMethodsStopwatch.Elapsed);
                         }
 
-                        privateMethodsStopwatch.Restart();
                         ShiftRowsInverse(inputMatrix);
-                        shiftRows = shiftRows.Add(privateMethodsStopwatch.Elapsed);
-
-                        privateMethodsStopwatch.Restart();
                         SubBytesInverse(inputMatrix);
-                        subBytes = subBytes.Add(privateMethodsStopwatch.Elapsed);
-
-                        privateMethodsStopwatch.Restart();
                         AddRoundKeyInverse(inputMatrix, keyCopy);
-                        addRoundKey = addRoundKey.Add(privateMethodsStopwatch.Elapsed);
-
-                        privateMethodsStopwatch.Restart();
                         Array.Copy(CryptoMatrixToArray(inputMatrix), 0, bytesToWrite10MB, i, 16);
-                        cryptoMatrixToArray = cryptoMatrixToArray.Add(privateMethodsStopwatch.Elapsed);
                     }
                     while (remainderDividingBy16 > 0)
                     {
                         bytesToWrite10MB[byteArray10MB.Length - remainderDividingBy16] = byteArray10MB[byteArray10MB.Length - remainderDividingBy16];
                         remainderDividingBy16--;
                     }
-                    s.Stop();
-                    Console.WriteLine(" - decrypt processed 10MB - " + Path.GetFileName(outputFilePath) + " - " + bytesToWrite10MB.Length + " - elapsed: " + s.Elapsed + " - " + indexOfReadBytes);
-                    totalElapsed = totalElapsed.Add(s.Elapsed);
+                    Console.WriteLine(" - decrypt processed 10MB - " + bytesToWrite10MB.Length + " - " + outputFileName + " - elapsed: " + s.Elapsed + " - " + indexOfReadBytes);
                     writeTasks.Add(WriteCryptoBytes(fw, bytesToWrite10MB));
                     indexOfReadBytes++;
                 }
                 await Task.WhenAll(writeTasks);
             }
-            Console.WriteLine("--------------------------total elapsed: " + totalElapsed);
-            Console.WriteLine("\t\t sub bytes: " + subBytes);
-            Console.WriteLine("\t\t createInputMatrix: " + createInputMatrix);
-            Console.WriteLine("\t\t shiftRows: " + shiftRows);
-            Console.WriteLine("\t\t mixColumns: " + mixColumns);
-            Console.WriteLine("\t\t addRoundKey: " + addRoundKey);
-            Console.WriteLine("\t\t cryptoMatrixToArray: " + cryptoMatrixToArray);
+            s.Stop();
+            Console.WriteLine("--------------------------total encrypt time: " + s.Elapsed);
         }
 
         private static void MixColumnsInverse(byte[][] inputMatrix)

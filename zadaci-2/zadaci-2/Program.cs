@@ -22,8 +22,10 @@ namespace zadaci_2
             //await AES.AESCrypt(Constants.TestFilesPath + "B2A.bmp", key, Constants.Results_A3_2_FilesPath + "B2A_encr.bmp");
             //await AES.AESDecrypt(Constants.Results_A3_2_FilesPath + "B2A_encr.bmp", key, Constants.Results_A3_2_FilesPath + "B2A_decrypted.bmp");
 
-            Console.WriteLine(await MD5.MD5Hash(Constants.TestFilesPath + "B2A.bmp"));
-            Console.WriteLine(await MD5.MD5Hash(Constants.Results_A3_2_FilesPath + "B2A_decrypted.bmp"));
+            Console.WriteLine(await MD5.MD5Hash(Constants.TestFilesPath + "100MB.zip"));
+            Console.WriteLine(await MD5.MD5Hash(Constants.Results_A3_2_FilesPath + "100MB_decrypted.bmp"));
+            Console.WriteLine(await MD5.MD5Hash(Constants.TestFilesPath + "1GB.zip"));
+            Console.WriteLine(await MD5.MD5Hash(Constants.Results_A3_2_FilesPath + "1GB_decrypted.bmp"));
         }
     }
 }
