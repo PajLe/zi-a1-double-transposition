@@ -76,7 +76,7 @@ namespace zadaci_2
             using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
             {
                 int indexOfReadBytes = 0;
-                await foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtTheTime(inputFilePath))
+                await foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtATime(inputFilePath))
                 {
                     Stopwatch s = new Stopwatch();
                     Stopwatch privateMethodsStopwatch = new Stopwatch();
@@ -349,7 +349,7 @@ namespace zadaci_2
             using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
             {
                 int indexOfReadBytes = 0;
-                await foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtTheTime(inputFilePath))
+                await foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtATime(inputFilePath))
                 {
                     Stopwatch privateMethodsStopwatch = new Stopwatch();
                     Stopwatch s = new Stopwatch();

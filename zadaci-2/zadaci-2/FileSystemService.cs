@@ -64,7 +64,7 @@ namespace zadaci_2
             }
         }
 
-        public static async IAsyncEnumerable<byte[]> ReadFileTenMegabytesAtTheTime(string inputFilePath)
+        public static async IAsyncEnumerable<byte[]> ReadFileTenMegabytesAtATime(string inputFilePath)
         {
             int tenMegabytes = 10485760;
 
