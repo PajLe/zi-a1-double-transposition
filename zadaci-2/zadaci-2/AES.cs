@@ -99,7 +99,6 @@ namespace zadaci_2
                         bytesToWrite10MB[byteArray10MB.Length - remainderDividingBy16] = byteArray10MB[byteArray10MB.Length - remainderDividingBy16];
                         remainderDividingBy16--;
                     }
-                    s.Stop();
                     Console.WriteLine(" - encrypt processed 10MB - " + bytesToWrite10MB.Length + " - " + outputFileName + " - elapsed: " + s.Elapsed + " - " + indexOfReadBytes);
                     writeTasks.Add(WriteCryptoBytes(fw, bytesToWrite10MB));
                     indexOfReadBytes++;
@@ -336,7 +335,7 @@ namespace zadaci_2
                 await Task.WhenAll(writeTasks);
             }
             s.Stop();
-            Console.WriteLine("--------------------------total encrypt time: " + s.Elapsed);
+            Console.WriteLine("--------------------------total decrypt time: " + s.Elapsed);
         }
 
         private static void MixColumnsInverse(byte[][] inputMatrix)
