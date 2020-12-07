@@ -14,10 +14,10 @@ namespace zadaci_2
             await AES.AESDecrypt(Constants.Results_A3_2_FilesPath + "B2A_encr.bmp", key, Constants.Results_A3_2_FilesPath + "B2A_decrypted.bmp");
 
 
-            await AES.AESCrypt(Constants.TestFilesPath + "50MB.zip", key, Constants.Results_A3_2_FilesPath + "50MB_encrypted.zip");
-            await AES.AESDecrypt(Constants.Results_A3_2_FilesPath + "50MB_encrypted.zip", key, Constants.Results_A3_2_FilesPath + "50MB_decrypted.zip");
-            //await AES.AESCrypt(Constants.TestFilesPath + "1GB.zip", key, Constants.Results_A3_2_FilesPath + "1GB_encrypted.zip");
-            //await AES.AESDecrypt(Constants.Results_A3_2_FilesPath + "1GB_encrypted.zip", key, Constants.Results_A3_2_FilesPath + "1GB_decrypted.zip");
+            await AES.AESCrypt(Constants.TestFilesPath + "100MB.zip", key, Constants.Results_A3_2_FilesPath + "100MB_encrypted.zip");
+            await AES.AESDecrypt(Constants.Results_A3_2_FilesPath + "100MB_encrypted.zip", key, Constants.Results_A3_2_FilesPath + "100MB_decrypted.zip");
+            await AES.AESCrypt(Constants.TestFilesPath + "1GB.zip", key, Constants.Results_A3_2_FilesPath + "1GB_encrypted.zip");
+            await AES.AESDecrypt(Constants.Results_A3_2_FilesPath + "1GB_encrypted.zip", key, Constants.Results_A3_2_FilesPath + "1GB_decrypted.zip");
         }
     }
 }
