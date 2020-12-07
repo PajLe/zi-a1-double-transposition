@@ -51,6 +51,12 @@ namespace zadaci_2
             0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d
         };
 
+        private static Dictionary<byte, byte> gfmultBy02 = new Dictionary<byte, byte>();
+        private static Dictionary<byte, byte> gfmultBy03 = new Dictionary<byte, byte>();
+        private static Dictionary<byte, byte> gfmultBy09 = new Dictionary<byte, byte>();
+        private static Dictionary<byte, byte> gfmultBy0b = new Dictionary<byte, byte>();
+        private static Dictionary<byte, byte> gfmultBy0d = new Dictionary<byte, byte>();
+        private static Dictionary<byte, byte> gfmultBy0e = new Dictionary<byte, byte>();
 
         public static async Task AESCrypt(string inputFilePath, byte[] key, string outputFilePath)
         {
@@ -153,10 +159,10 @@ namespace zadaci_2
                 byte a2 = inputMatrix[2][j];
                 byte a3 = inputMatrix[3][j];
 
-                byte r0 = (byte)(gfmultby02(a0) ^ gfmultby01(a3) ^ gfmultby01(a2) ^ gfmultby03(a1));
-                byte r1 = (byte)(gfmultby02(a1) ^ gfmultby01(a0) ^ gfmultby01(a3) ^ gfmultby03(a2));
-                byte r2 = (byte)(gfmultby02(a2) ^ gfmultby01(a1) ^ gfmultby01(a0) ^ gfmultby03(a3));
-                byte r3 = (byte)(gfmultby02(a3) ^ gfmultby01(a2) ^ gfmultby01(a1) ^ gfmultby03(a0));
+                byte r0 = (byte)(gfmultby02(a0) ^ a3 ^ a2 ^ gfmultby03(a1));
+                byte r1 = (byte)(gfmultby02(a1) ^ a0 ^ a3 ^ gfmultby03(a2));
+                byte r2 = (byte)(gfmultby02(a2) ^ a1 ^ a0 ^ gfmultby03(a3));
+                byte r3 = (byte)(gfmultby02(a3) ^ a2 ^ a1 ^ gfmultby03(a0));
 
                 inputMatrix[0][j] = r0;
                 inputMatrix[1][j] = r1;
@@ -228,42 +234,101 @@ namespace zadaci_2
 
         private static byte gfmultby02(byte b)
         {
-            if (b < 0x80)
-                return (byte)(int)(b << 1);
+            if (gfmultBy02.TryGetValue(b, out byte toRet))
+            {
+                return toRet;
+            }
             else
-                return (byte)((int)(b << 1) ^ (int)(0x1b));
+            {
+                if (b < 0x80)
+                    toRet = (byte)(int)(b << 1);
+                else
+                    toRet = (byte)((int)(b << 1) ^ (int)(0x1b));
+
+                gfmultBy02.Add(b, toRet);
+
+                return toRet;
+            }
         }
 
         private static byte gfmultby03(byte b)
         {
-            return (byte)((int)gfmultby02(b) ^ (int)b);
+            if (gfmultBy03.TryGetValue(b, out byte toRet))
+            {
+                return toRet;
+            }
+            else
+            {
+                toRet = (byte)((int)gfmultby02(b) ^ (int)b);
+
+                gfmultBy03.Add(b, toRet);
+
+                return toRet;
+            }
         }
 
         private static byte gfmultby09(byte b)
         {
-            return (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^
-                (int)b);
+            if (gfmultBy09.TryGetValue(b, out byte toRet))
+            {
+                return toRet;
+            }
+            else
+            {
+                toRet = (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^ (int)b);
+
+                gfmultBy09.Add(b, toRet);
+
+                return toRet;
+            }
         }
 
         private static byte gfmultby0b(byte b)
         {
-            return (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^
-                (int)gfmultby02(b) ^
-                (int)b);
+            if (gfmultBy0b.TryGetValue(b, out byte toRet))
+            {
+                return toRet;
+            } 
+            else
+            {
+                toRet = (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^ (int)gfmultby02(b) ^ (int)b);
+
+                gfmultBy0b.Add(b, toRet);
+
+                return toRet;
+            }
         }
 
         private static byte gfmultby0d(byte b)
         {
-            return (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^
-                (int)gfmultby02(gfmultby02(b)) ^
-                (int)(b));
+            if (gfmultBy0d.TryGetValue(b, out byte toRet))
+            {
+                return toRet;
+            }
+            else
+            {
+                toRet = (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^ (int)gfmultby02(gfmultby02(b)) ^ (int)(b));
+
+                gfmultBy0d.Add(b, toRet);
+
+                return toRet;
+            }
         }
 
         private static byte gfmultby0e(byte b)
         {
-            return (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^
-                (int)gfmultby02(gfmultby02(b)) ^
-                (int)gfmultby02(b));
+            if (gfmultBy0e.TryGetValue(b, out byte toRet))
+            {
+                return toRet;
+            }
+            else
+            {
+                toRet = (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^ (int)gfmultby02(gfmultby02(b)) ^ (int)gfmultby02(b));
+
+                gfmultBy0e.Add(b, toRet);
+
+                return toRet;
+            }
         }
 
         public static async Task AESDecrypt(string inputFilePath, byte[] key, string outputFilePath)
