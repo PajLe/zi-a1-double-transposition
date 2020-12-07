@@ -348,12 +348,12 @@ namespace zadaci_2
                 cryptoMatrixToArray = new TimeSpan();
             using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
             {
-                Stopwatch s = new Stopwatch();
-                s.Start();
                 int indexOfReadBytes = 0;
                 await foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtTheTime(inputFilePath))
                 {
                     Stopwatch privateMethodsStopwatch = new Stopwatch();
+                    Stopwatch s = new Stopwatch();
+                    s.Start();
 
                     int remainderDividingBy16 = byteArray10MB.Length % 16;
                     byte[] bytesToWrite10MB = new byte[byteArray10MB.Length];
