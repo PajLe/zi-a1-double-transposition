@@ -352,6 +352,25 @@ namespace zadaci_2
             }
         }
 
+        private static byte gfmultby02Concurrent(byte b)
+        {
+            if (gfmultBy02Concurrent.TryGetValue(b, out byte toRet))
+            {
+                return toRet;
+            }
+            else
+            {
+                if (b < 0x80)
+                    toRet = (byte)(int)(b << 1);
+                else
+                    toRet = (byte)((int)(b << 1) ^ (int)(0x1b));
+
+                gfmultBy02Concurrent.TryAdd(b, toRet);
+
+                return toRet;
+            }
+        }
+
         private static byte gfmultby03(byte b)
         {
             if (gfmultBy03.TryGetValue(b, out byte toRet))
@@ -363,6 +382,22 @@ namespace zadaci_2
                 toRet = (byte)((int)gfmultby02(b) ^ (int)b);
 
                 gfmultBy03.Add(b, toRet);
+
+                return toRet;
+            }
+        }
+
+        private static byte gfmultby03Concurrent(byte b)
+        {
+            if (gfmultBy03Concurrent.TryGetValue(b, out byte toRet))
+            {
+                return toRet;
+            }
+            else
+            {
+                toRet = (byte)((int)gfmultby02Concurrent(b) ^ (int)b);
+
+                gfmultBy03Concurrent.TryAdd(b, toRet);
 
                 return toRet;
             }
@@ -384,6 +419,22 @@ namespace zadaci_2
             }
         }
 
+        private static byte gfmultby09Concurrent(byte b)
+        {
+            if (gfmultBy09Concurrent.TryGetValue(b, out byte toRet))
+            {
+                return toRet;
+            }
+            else
+            {
+                toRet = (byte)((int)gfmultby02Concurrent(gfmultby02Concurrent(gfmultby02Concurrent(b))) ^ (int)b);
+
+                gfmultBy09Concurrent.TryAdd(b, toRet);
+
+                return toRet;
+            }
+        }
+
         private static byte gfmultby0b(byte b)
         {
             if (gfmultBy0b.TryGetValue(b, out byte toRet))
@@ -395,6 +446,22 @@ namespace zadaci_2
                 toRet = (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^ (int)gfmultby02(b) ^ (int)b);
 
                 gfmultBy0b.Add(b, toRet);
+
+                return toRet;
+            }
+        }
+
+        private static byte gfmultby0bConcurrent(byte b)
+        {
+            if (gfmultBy0bConcurrent.TryGetValue(b, out byte toRet))
+            {
+                return toRet;
+            }
+            else
+            {
+                toRet = (byte)((int)gfmultby02Concurrent(gfmultby02Concurrent(gfmultby02Concurrent(b))) ^ (int)gfmultby02Concurrent(b) ^ (int)b);
+
+                gfmultBy0bConcurrent.TryAdd(b, toRet);
 
                 return toRet;
             }
@@ -416,6 +483,22 @@ namespace zadaci_2
             }
         }
 
+        private static byte gfmultby0dConcurrent(byte b)
+        {
+            if (gfmultBy0dConcurrent.TryGetValue(b, out byte toRet))
+            {
+                return toRet;
+            }
+            else
+            {
+                toRet = (byte)((int)gfmultby02Concurrent(gfmultby02Concurrent(gfmultby02Concurrent(b))) ^ (int)gfmultby02Concurrent(gfmultby02Concurrent(b)) ^ (int)(b));
+
+                gfmultBy0dConcurrent.TryAdd(b, toRet);
+
+                return toRet;
+            }
+        }
+
         private static byte gfmultby0e(byte b)
         {
             if (gfmultBy0e.TryGetValue(b, out byte toRet))
@@ -427,6 +510,22 @@ namespace zadaci_2
                 toRet = (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^ (int)gfmultby02(gfmultby02(b)) ^ (int)gfmultby02(b));
 
                 gfmultBy0e.Add(b, toRet);
+
+                return toRet;
+            }
+        }
+
+        private static byte gfmultby0eConcurrent(byte b)
+        {
+            if (gfmultBy0eConcurrent.TryGetValue(b, out byte toRet))
+            {
+                return toRet;
+            }
+            else
+            {
+                toRet = (byte)((int)gfmultby02Concurrent(gfmultby02Concurrent(gfmultby02Concurrent(b))) ^ (int)gfmultby02Concurrent(gfmultby02Concurrent(b)) ^ (int)gfmultby02Concurrent(b));
+
+                gfmultBy0eConcurrent.TryAdd(b, toRet);
 
                 return toRet;
             }
