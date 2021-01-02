@@ -12,5 +12,6 @@ namespace zadaci_2
         public static readonly string Results_A1_2_FilesPath = Environment.CurrentDirectory + @"\..\..\..\Results\A1_2\";
         public static readonly string Results_A2_2_FilesPath = Environment.CurrentDirectory + @"\..\..\..\Results\A2_2\";
         public static readonly string Results_A3_2_FilesPath = Environment.CurrentDirectory + @"\..\..\..\Results\A3_2\";
+        public static readonly string Results_A4_2_FilesPath = Environment.CurrentDirectory + @"\..\..\..\Results\A4_2\";
     }
 }
