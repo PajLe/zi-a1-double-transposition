@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -57,6 +58,13 @@ namespace zadaci_2
         private static Dictionary<byte, byte> gfmultBy0b = new Dictionary<byte, byte>();
         private static Dictionary<byte, byte> gfmultBy0d = new Dictionary<byte, byte>();
         private static Dictionary<byte, byte> gfmultBy0e = new Dictionary<byte, byte>();
+
+        private static ConcurrentDictionary<byte, byte> gfmultBy02Concurrent = new ConcurrentDictionary<byte, byte>();
+        private static ConcurrentDictionary<byte, byte> gfmultBy03Concurrent = new ConcurrentDictionary<byte, byte>();
+        private static ConcurrentDictionary<byte, byte> gfmultBy09Concurrent = new ConcurrentDictionary<byte, byte>();
+        private static ConcurrentDictionary<byte, byte> gfmultBy0bConcurrent = new ConcurrentDictionary<byte, byte>();
+        private static ConcurrentDictionary<byte, byte> gfmultBy0dConcurrent = new ConcurrentDictionary<byte, byte>();
+        private static ConcurrentDictionary<byte, byte> gfmultBy0eConcurrent = new ConcurrentDictionary<byte, byte>();
 
         private static byte[] InitializationVector;
 
@@ -118,7 +126,7 @@ namespace zadaci_2
             Stopwatch s = new Stopwatch();
             s.Start();
 
-            InitializationVector = new byte[]{ 0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb };
+            InitializationVector = new byte[] { 0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb };
             byte[] keyCopy = new byte[key.Length];
             key.CopyTo(keyCopy, 0);
             string outputFileName = Path.GetFileName(outputFilePath);
@@ -381,7 +389,7 @@ namespace zadaci_2
             if (gfmultBy0b.TryGetValue(b, out byte toRet))
             {
                 return toRet;
-            } 
+            }
             else
             {
                 toRet = (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^ (int)gfmultby02(b) ^ (int)b);
@@ -517,6 +525,110 @@ namespace zadaci_2
                     inputMatrix[i][j] = (byte)(inputMatrix[i][j] ^ keyCopy[i * 4 + j]);
 
             keyCopy.ShiftRight(1); // reverse keyschedule
+        }
+
+        public static async Task AESCryptParallel(string inputFilePath, byte[] key, string outputFilePath)
+        {
+            if (key.Length != 16)
+                throw new ArgumentException("Key has to be 16 bytes", nameof(key));
+            Stopwatch s = new Stopwatch();
+            s.Start();
+
+            byte[] keyCopy = new byte[key.Length];
+            key.CopyTo(keyCopy, 0);
+            string outputFileName = Path.GetFileName(outputFilePath);
+            IList<Task> writeTasks = new List<Task>();
+            using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
+            {
+                int indexOfReadBytes = 0;
+                await foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtATime(inputFilePath))
+                {
+                    int remainderDividingBy16 = byteArray10MB.Length % 16;
+                    byte[] bytesToWrite10MB = new byte[byteArray10MB.Length];
+
+                    Parallel.For(0, (byteArray10MB.Length - remainderDividingBy16) / 16, (i) =>
+                    {
+                        byte[][] inputMatrix = CreateInputMatrix4By4(byteArray10MB, i * 16);
+                        AddRoundKey(inputMatrix, keyCopy);
+
+                        for (int round = 1; round <= 13; round++)
+                        {
+                            SubBytes(inputMatrix);
+                            ShiftRows(inputMatrix);
+                            MixColumns(inputMatrix);
+                            AddRoundKey(inputMatrix, keyCopy);
+                        }
+
+                        SubBytes(inputMatrix);
+                        ShiftRows(inputMatrix);
+                        AddRoundKey(inputMatrix, keyCopy);
+                        Array.Copy(CryptoMatrixToArray(inputMatrix), 0, bytesToWrite10MB, i * 16, 16);
+                    });
+                    while (remainderDividingBy16 > 0)
+                    {
+                        bytesToWrite10MB[byteArray10MB.Length - remainderDividingBy16] = byteArray10MB[byteArray10MB.Length - remainderDividingBy16];
+                        remainderDividingBy16--;
+                    }
+                    Console.WriteLine(" - encrypt processed 10MB - " + bytesToWrite10MB.Length + " - " + outputFileName + " - elapsed: " + s.Elapsed + " - " + indexOfReadBytes);
+                    writeTasks.Add(WriteCryptoBytes(fw, bytesToWrite10MB));
+                    indexOfReadBytes++;
+                }
+                await Task.WhenAll(writeTasks);
+            }
+            s.Stop();
+            Console.WriteLine("--------------------------total encrypt time: " + s.Elapsed);
+        }
+
+        public static async Task AESDecryptParallel(string inputFilePath, byte[] key, string outputFilePath)
+        {
+            if (key.Length != 16)
+                throw new ArgumentException("Key has to be 16 bytes", nameof(key));
+            Stopwatch s = new Stopwatch();
+            s.Start();
+
+            byte[] keyCopy = new byte[key.Length];
+            key.CopyTo(keyCopy, 0);
+            IList<Task> writeTasks = new List<Task>();
+            string outputFileName = Path.GetFileName(outputFilePath);
+            using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
+            {
+                int indexOfReadBytes = 0;
+                await foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtATime(inputFilePath))
+                {
+                    int remainderDividingBy16 = byteArray10MB.Length % 16;
+                    byte[] bytesToWrite10MB = new byte[byteArray10MB.Length];
+                    Parallel.For(0, (byteArray10MB.Length - remainderDividingBy16) / 16, index =>
+                    {
+                        byte[][] inputMatrix = CreateInputMatrix4By4(byteArray10MB, index * 16);
+                        keyCopy.ShiftRight(2); // dependent on number of rounds
+                        AddRoundKeyInverse(inputMatrix, keyCopy);
+
+                        for (int round = 1; round <= 13; round++)
+                        {
+                            ShiftRowsInverse(inputMatrix);
+                            SubBytesInverse(inputMatrix);
+                            AddRoundKeyInverse(inputMatrix, keyCopy);
+                            MixColumnsInverse(inputMatrix);
+                        }
+
+                        ShiftRowsInverse(inputMatrix);
+                        SubBytesInverse(inputMatrix);
+                        AddRoundKeyInverse(inputMatrix, keyCopy);
+                        Array.Copy(CryptoMatrixToArray(inputMatrix), 0, bytesToWrite10MB, index * 16, 16);
+                    });
+                    while (remainderDividingBy16 > 0)
+                    {
+                        bytesToWrite10MB[byteArray10MB.Length - remainderDividingBy16] = byteArray10MB[byteArray10MB.Length - remainderDividingBy16];
+                        remainderDividingBy16--;
+                    }
+                    Console.WriteLine(" - decrypt processed 10MB - " + bytesToWrite10MB.Length + " - " + outputFileName + " - elapsed: " + s.Elapsed + " - " + indexOfReadBytes);
+                    writeTasks.Add(WriteCryptoBytes(fw, bytesToWrite10MB));
+                    indexOfReadBytes++;
+                }
+                await Task.WhenAll(writeTasks);
+            }
+            s.Stop();
+            Console.WriteLine("--------------------------total decrypt time: " + s.Elapsed);
         }
     }
 }
