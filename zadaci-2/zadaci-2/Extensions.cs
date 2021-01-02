@@ -69,5 +69,14 @@ namespace zadaci_2
             uintBitArray.CopyTo(arr, 0);
             return arr[0];
         }
+
+        public static byte[] Xor(this byte[] bytes, byte[] with)
+        {
+            byte[] xoredBytes = new byte[bytes.Length];
+            for (int i = 0; i < xoredBytes.Length; i++)
+                xoredBytes[i] = (byte)(bytes[i] ^ with[i]);
+
+            return xoredBytes;
+        }
     }
 }

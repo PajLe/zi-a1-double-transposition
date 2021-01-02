@@ -58,6 +58,8 @@ namespace zadaci_2
         private static Dictionary<byte, byte> gfmultBy0d = new Dictionary<byte, byte>();
         private static Dictionary<byte, byte> gfmultBy0e = new Dictionary<byte, byte>();
 
+        private static byte[] InitializationVector;
+
         public static async Task AESCrypt(string inputFilePath, byte[] key, string outputFilePath)
         {
             if (key.Length != 16)
@@ -107,6 +109,142 @@ namespace zadaci_2
             }
             s.Stop();
             Console.WriteLine("--------------------------total encrypt time: " + s.Elapsed);
+        }
+
+        public static async Task AESCryptWithPCBC(string inputFilePath, byte[] key, string outputFilePath)
+        {
+            if (key.Length != 16)
+                throw new ArgumentException("Key has to be 16 bytes", nameof(key));
+            Stopwatch s = new Stopwatch();
+            s.Start();
+
+            InitializationVector = new byte[]{ 0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb };
+            byte[] keyCopy = new byte[key.Length];
+            key.CopyTo(keyCopy, 0);
+            string outputFileName = Path.GetFileName(outputFilePath);
+            IList<Task> writeTasks = new List<Task>();
+            using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
+            {
+                int indexOfReadBytes = 0;
+                await foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtATime(inputFilePath))
+                {
+                    int remainderDividingBy16 = byteArray10MB.Length % 16;
+                    byte[] bytesToWrite10MB = new byte[byteArray10MB.Length];
+                    for (int i = 0; i < byteArray10MB.Length - remainderDividingBy16; i += 16)
+                    {
+                        byte[] plainTextBlock = new byte[16];
+                        Array.Copy(byteArray10MB, i, plainTextBlock, 0, 16);
+
+                        byte[][] inputMatrix = CreateInputMatrix4By4ForPCBC(byteArray10MB, i);
+                        AddRoundKey(inputMatrix, keyCopy);
+
+                        for (int round = 1; round <= 13; round++)
+                        {
+                            SubBytes(inputMatrix);
+                            ShiftRows(inputMatrix);
+                            MixColumns(inputMatrix);
+                            AddRoundKey(inputMatrix, keyCopy);
+                        }
+
+                        SubBytes(inputMatrix);
+                        ShiftRows(inputMatrix);
+                        AddRoundKey(inputMatrix, keyCopy);
+
+                        byte[] cipherText = CryptoMatrixToArray(inputMatrix);
+                        Array.Copy(cipherText, 0, bytesToWrite10MB, i, 16);
+                        InitializationVector = plainTextBlock.Xor(cipherText);
+                    }
+                    while (remainderDividingBy16 > 0)
+                    {
+                        bytesToWrite10MB[byteArray10MB.Length - remainderDividingBy16] = byteArray10MB[byteArray10MB.Length - remainderDividingBy16];
+                        remainderDividingBy16--;
+                    }
+                    Console.WriteLine(" - encrypt processed 10MB - " + bytesToWrite10MB.Length + " - " + outputFileName + " - elapsed: " + s.Elapsed + " - " + indexOfReadBytes);
+                    writeTasks.Add(WriteCryptoBytes(fw, bytesToWrite10MB));
+                    indexOfReadBytes++;
+                }
+                await Task.WhenAll(writeTasks);
+            }
+            s.Stop();
+            Console.WriteLine("--------------------------total encrypt time: " + s.Elapsed);
+        }
+
+        private static byte[][] CreateInputMatrix4By4ForPCBC(byte[] sourceBytes, int startPos)
+        {
+            byte[] sourceBytesBlock = new byte[16];
+            Array.Copy(sourceBytes, startPos, sourceBytesBlock, 0, 16);
+            byte[] PCBCdBytes = sourceBytesBlock.Xor(InitializationVector);
+            byte[][] matrix4x4 = new byte[4][];
+            startPos = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                matrix4x4[i] = new byte[4];
+
+                for (int j = 0; j < 4; j++)
+                    matrix4x4[i][j] = PCBCdBytes[startPos++];
+            }
+
+            return matrix4x4;
+        }
+
+        public static async Task AESDecryptWithPCBC(string inputFilePath, byte[] key, string outputFilePath)
+        {
+            if (key.Length != 16)
+                throw new ArgumentException("Key has to be 16 bytes", nameof(key));
+            Stopwatch s = new Stopwatch();
+            s.Start();
+
+            InitializationVector = new byte[] { 0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb };
+            byte[] keyCopy = new byte[key.Length];
+            key.CopyTo(keyCopy, 0);
+            IList<Task> writeTasks = new List<Task>();
+            string outputFileName = Path.GetFileName(outputFilePath);
+            using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
+            {
+                int indexOfReadBytes = 0;
+                await foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtATime(inputFilePath))
+                {
+                    int remainderDividingBy16 = byteArray10MB.Length % 16;
+                    byte[] bytesToWrite10MB = new byte[byteArray10MB.Length];
+                    for (int i = 0; i < byteArray10MB.Length - remainderDividingBy16; i += 16)
+                    {
+                        byte[] cipherTextBlock = new byte[16];
+                        Array.Copy(byteArray10MB, i, cipherTextBlock, 0, 16);
+
+                        byte[][] inputMatrix = CreateInputMatrix4By4(byteArray10MB, i);
+                        keyCopy.ShiftRight(2); // dependent on number of rounds
+                        AddRoundKeyInverse(inputMatrix, keyCopy);
+
+                        for (int round = 1; round <= 13; round++)
+                        {
+                            ShiftRowsInverse(inputMatrix);
+                            SubBytesInverse(inputMatrix);
+                            AddRoundKeyInverse(inputMatrix, keyCopy);
+                            MixColumnsInverse(inputMatrix);
+                        }
+
+                        ShiftRowsInverse(inputMatrix);
+                        SubBytesInverse(inputMatrix);
+                        AddRoundKeyInverse(inputMatrix, keyCopy);
+
+                        byte[] plainTextPCBCd = CryptoMatrixToArray(inputMatrix);
+                        byte[] plainText = plainTextPCBCd.Xor(InitializationVector);
+                        Array.Copy(plainText, 0, bytesToWrite10MB, i, 16);
+                        InitializationVector = plainText.Xor(cipherTextBlock);
+                    }
+                    while (remainderDividingBy16 > 0)
+                    {
+                        bytesToWrite10MB[byteArray10MB.Length - remainderDividingBy16] = byteArray10MB[byteArray10MB.Length - remainderDividingBy16];
+                        remainderDividingBy16--;
+                    }
+                    Console.WriteLine(" - decrypt processed 10MB - " + bytesToWrite10MB.Length + " - " + outputFileName + " - elapsed: " + s.Elapsed + " - " + indexOfReadBytes);
+                    writeTasks.Add(WriteCryptoBytes(fw, bytesToWrite10MB));
+                    indexOfReadBytes++;
+                }
+                await Task.WhenAll(writeTasks);
+            }
+            s.Stop();
+            Console.WriteLine("--------------------------total decrypt time: " + s.Elapsed);
         }
 
         private static void MixColumns(byte[][] inputMatrix)
@@ -307,7 +445,7 @@ namespace zadaci_2
                     for (int i = 0; i < byteArray10MB.Length - remainderDividingBy16; i += 16)
                     {
                         byte[][] inputMatrix = CreateInputMatrix4By4(byteArray10MB, i);
-                        keyCopy.ShiftRight(2);
+                        keyCopy.ShiftRight(2); // dependent on number of rounds
                         AddRoundKeyInverse(inputMatrix, keyCopy);
 
                         for (int round = 1; round <= 13; round++)
