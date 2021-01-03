@@ -97,5 +97,12 @@ namespace zadaci_2
 
             return concurrentDictionary;
         }
+
+        public static void ArrayCopyToConcurrentDictionary<T>(T[] sourceArray, int sourceIndex, 
+            ConcurrentDictionary<int, T> destinationConcurrentDictionary, int destinationIndex, int length) where T : struct
+        {
+            for (int i = 0; i < length; i++)
+                destinationConcurrentDictionary.TryAdd(destinationIndex++, sourceArray[sourceIndex++]);
+        }
     }
 }

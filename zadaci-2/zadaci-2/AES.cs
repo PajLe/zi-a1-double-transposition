@@ -688,7 +688,7 @@ namespace zadaci_2
                 await foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtATime(inputFilePath))
                 {
                     int remainderDividingBy16 = byteArray10MB.Length % 16;
-                    byte[] bytesToWrite10MB = new byte[byteArray10MB.Length];
+                    ConcurrentDictionary<int, byte> bytesToWrite10MB = new ConcurrentDictionary<int, byte>();
                     var byteArray10MBAsConcurrentDictionary = byteArray10MB.ToConcurrentDictionary();
 
                     Parallel.For(0, (byteArray10MB.Length - remainderDividingBy16) / 16, (i) =>
@@ -705,18 +705,18 @@ namespace zadaci_2
                             AddRoundKey(inputMatrix, keyCopy);
                         }
 
-                        SubBytes(inputMatrix);
+                        SubBytesConcurrent(inputMatrix);
                         ShiftRows(inputMatrix);
                         AddRoundKey(inputMatrix, keyCopy);
-                        Array.Copy(CryptoMatrixToArray(inputMatrix), 0, bytesToWrite10MB, i * 16, 16);
+                        Extensions.ArrayCopyToConcurrentDictionary(CryptoMatrixToArray(inputMatrix), 0, bytesToWrite10MB, i * 16, 16);
                     });
                     while (remainderDividingBy16 > 0)
                     {
                         bytesToWrite10MB[byteArray10MB.Length - remainderDividingBy16] = byteArray10MB[byteArray10MB.Length - remainderDividingBy16];
                         remainderDividingBy16--;
                     }
-                    Console.WriteLine(" - encrypt processed 10MB - " + bytesToWrite10MB.Length + " - " + outputFileName + " - elapsed: " + s.Elapsed + " - " + indexOfReadBytes);
-                    writeTasks.Add(WriteCryptoBytes(fw, bytesToWrite10MB));
+                    Console.WriteLine(" - encrypt processed 10MB - " + bytesToWrite10MB.Count + " - " + outputFileName + " - elapsed: " + s.Elapsed + " - " + indexOfReadBytes);
+                    writeTasks.Add(WriteCryptoBytes(fw, bytesToWrite10MB.ToArray<byte>()));
                     indexOfReadBytes++;
                 }
                 await Task.WhenAll(writeTasks);
