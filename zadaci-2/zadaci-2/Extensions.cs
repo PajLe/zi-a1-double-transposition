@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -77,6 +78,24 @@ namespace zadaci_2
                 xoredBytes[i] = (byte)(bytes[i] ^ with[i]);
 
             return xoredBytes;
+        }
+
+        public static T[] ToArray<T>(this ConcurrentDictionary<int, T> concurrentDictionary) where T : struct
+        {
+            T[] array = new T[concurrentDictionary.Count];
+            for (int i = 0; i < concurrentDictionary.Keys.Count; i++)
+                concurrentDictionary.TryGetValue(i, out array[i]);
+
+            return array;
+        }
+
+        public static ConcurrentDictionary<int, T> ToConcurrentDictionary<T>(this T[] array) where T : struct
+        {
+            ConcurrentDictionary<int, T> concurrentDictionary = new ConcurrentDictionary<int, T>();
+            for (int i = 0; i < array.Length; i++)
+                concurrentDictionary.TryAdd(i, array[i]);
+
+            return concurrentDictionary;
         }
     }
 }
