@@ -31,6 +31,7 @@ namespace zadaci_2
             0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16  //F
         };
 
+        private static readonly ConcurrentDictionary<int, byte> SBoxConcurrent = SBox.ToConcurrentDictionary();
 
         private static readonly byte[] SBoxInvert =
         {
@@ -51,6 +52,8 @@ namespace zadaci_2
             0xa0, 0xe0, 0x3b, 0x4d, 0xae, 0x2a, 0xf5, 0xb0, 0xc8, 0xeb, 0xbb, 0x3c, 0x83, 0x53, 0x99, 0x61,
             0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d
         };
+
+        private static readonly ConcurrentDictionary<int, byte> SBoxInvertConcurrent = SBoxInvert.ToConcurrentDictionary();
 
         private static Dictionary<byte, byte> gfmultBy02 = new Dictionary<byte, byte>();
         private static Dictionary<byte, byte> gfmultBy03 = new Dictionary<byte, byte>();
@@ -287,6 +290,13 @@ namespace zadaci_2
             for (int i = 0; i < 4; i++)
                 for (int j = 0; j < 4; j++)
                     inputMatrix[i][j] = SBox[inputMatrix[i][j]];
+        }
+
+        private static void SubBytesConcurrent(byte[][] inputMatrix)
+        {
+            for (int i = 0; i < 4; i++)
+                for (int j = 0; j < 4; j++)
+                    inputMatrix[i][j] = SBoxConcurrent[inputMatrix[i][j]];
         }
 
         private static void AddRoundKey(byte[][] inputMatrix, byte[] keyCopy)
@@ -668,7 +678,7 @@ namespace zadaci_2
 
                         for (int round = 1; round <= 13; round++)
                         {
-                            SubBytes(inputMatrix);
+                            SubBytesConcurrent(inputMatrix);
                             ShiftRows(inputMatrix);
                             MixColumns(inputMatrix);
                             AddRoundKey(inputMatrix, keyCopy);
