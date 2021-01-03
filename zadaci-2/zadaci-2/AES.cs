@@ -328,6 +328,21 @@ namespace zadaci_2
             return matrix4x4;
         }
 
+        private static byte[][] CreateInputMatrix4By4Concurrent(ConcurrentDictionary<int, byte> sourceBytesAsDictionary, int startPos)
+        {
+            byte[] sourceBytes = sourceBytesAsDictionary.ToArray<byte>();
+            byte[][] matrix4x4 = new byte[4][];
+            for (int i = 0; i < 4; i++)
+            {
+                matrix4x4[i] = new byte[4];
+
+                for (int j = 0; j < 4; j++)
+                    matrix4x4[i][j] = sourceBytes[startPos++];
+            }
+
+            return matrix4x4;
+        }
+
         private static byte gfmultby01(byte b)
         {
             return b;
@@ -633,8 +648,7 @@ namespace zadaci_2
             Stopwatch s = new Stopwatch();
             s.Start();
 
-            byte[] keyCopy = new byte[key.Length];
-            key.CopyTo(keyCopy, 0);
+            var concurrentKey = key.ToConcurrentDictionary();
             string outputFileName = Path.GetFileName(outputFilePath);
             IList<Task> writeTasks = new List<Task>();
             using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
@@ -644,10 +658,12 @@ namespace zadaci_2
                 {
                     int remainderDividingBy16 = byteArray10MB.Length % 16;
                     byte[] bytesToWrite10MB = new byte[byteArray10MB.Length];
+                    var byteArray10MBAsConcurrentDictionary = byteArray10MB.ToConcurrentDictionary();
 
                     Parallel.For(0, (byteArray10MB.Length - remainderDividingBy16) / 16, (i) =>
                     {
-                        byte[][] inputMatrix = CreateInputMatrix4By4(byteArray10MB, i * 16);
+                        byte[] keyCopy = concurrentKey.ToArray<byte>();
+                        byte[][] inputMatrix = CreateInputMatrix4By4Concurrent(byteArray10MBAsConcurrentDictionary, i * 16);
                         AddRoundKey(inputMatrix, keyCopy);
 
                         for (int round = 1; round <= 13; round++)
@@ -686,7 +702,6 @@ namespace zadaci_2
             s.Start();
 
             byte[] keyCopy = new byte[key.Length];
-            key.CopyTo(keyCopy, 0);
             IList<Task> writeTasks = new List<Task>();
             string outputFileName = Path.GetFileName(outputFilePath);
             using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
@@ -698,6 +713,7 @@ namespace zadaci_2
                     byte[] bytesToWrite10MB = new byte[byteArray10MB.Length];
                     Parallel.For(0, (byteArray10MB.Length - remainderDividingBy16) / 16, index =>
                     {
+                        key.CopyTo(keyCopy, 0);
                         byte[][] inputMatrix = CreateInputMatrix4By4(byteArray10MB, index * 16);
                         keyCopy.ShiftRight(2); // dependent on number of rounds
                         AddRoundKeyInverse(inputMatrix, keyCopy);
