@@ -650,11 +650,39 @@ namespace zadaci_2
             }
         }
 
+        private static void MixColumnsInverseConcurrent(byte[][] inputMatrix)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                byte a0 = inputMatrix[0][j];
+                byte a1 = inputMatrix[1][j];
+                byte a2 = inputMatrix[2][j];
+                byte a3 = inputMatrix[3][j];
+
+                byte r0 = (byte)(gfmultby0eConcurrent(a0) ^ gfmultby09Concurrent(a3) ^ gfmultby0dConcurrent(a2) ^ gfmultby0bConcurrent(a1));
+                byte r1 = (byte)(gfmultby0eConcurrent(a1) ^ gfmultby09Concurrent(a0) ^ gfmultby0dConcurrent(a3) ^ gfmultby0bConcurrent(a2));
+                byte r2 = (byte)(gfmultby0eConcurrent(a2) ^ gfmultby09Concurrent(a1) ^ gfmultby0dConcurrent(a0) ^ gfmultby0bConcurrent(a3));
+                byte r3 = (byte)(gfmultby0eConcurrent(a3) ^ gfmultby09Concurrent(a2) ^ gfmultby0dConcurrent(a1) ^ gfmultby0bConcurrent(a0));
+
+                inputMatrix[0][j] = r0;
+                inputMatrix[1][j] = r1;
+                inputMatrix[2][j] = r2;
+                inputMatrix[3][j] = r3;
+            }
+        }
+
         private static void SubBytesInverse(byte[][] inputMatrix)
         {
             for (int i = 0; i < 4; i++)
                 for (int j = 0; j < 4; j++)
                     inputMatrix[i][j] = SBoxInvert[inputMatrix[i][j]];
+        }
+
+        private static void SubBytesInverseConcurrent(byte[][] inputMatrix)
+        {
+            for (int i = 0; i < 4; i++)
+                for (int j = 0; j < 4; j++)
+                    inputMatrix[i][j] = SBoxInvertConcurrent[inputMatrix[i][j]];
         }
 
         private static void ShiftRowsInverse(byte[][] inputMatrix)
@@ -691,7 +719,7 @@ namespace zadaci_2
                     ConcurrentDictionary<int, byte> bytesToWrite10MB = new ConcurrentDictionary<int, byte>();
                     var byteArray10MBAsConcurrentDictionary = byteArray10MB.ToConcurrentDictionary();
 
-                    Parallel.For(0, (byteArray10MB.Length - remainderDividingBy16) / 16, (i) =>
+                    Parallel.For(0, (byteArray10MB.Length - remainderDividingBy16) / 16, i =>
                     {
                         byte[] keyCopy = concurrentKey.ToArray<byte>();
                         byte[][] inputMatrix = CreateInputMatrix4By4Concurrent(byteArray10MBAsConcurrentDictionary, i * 16);
@@ -732,7 +760,7 @@ namespace zadaci_2
             Stopwatch s = new Stopwatch();
             s.Start();
 
-            byte[] keyCopy = new byte[key.Length];
+            var concurrentKey = key.ToConcurrentDictionary();
             IList<Task> writeTasks = new List<Task>();
             string outputFileName = Path.GetFileName(outputFilePath);
             using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
@@ -741,34 +769,36 @@ namespace zadaci_2
                 await foreach (var byteArray10MB in FileSystemService.ReadFileTenMegabytesAtATime(inputFilePath))
                 {
                     int remainderDividingBy16 = byteArray10MB.Length % 16;
-                    byte[] bytesToWrite10MB = new byte[byteArray10MB.Length];
-                    Parallel.For(0, (byteArray10MB.Length - remainderDividingBy16) / 16, index =>
+                    ConcurrentDictionary<int, byte> bytesToWrite10MB = new ConcurrentDictionary<int, byte>();
+                    var byteArray10MBAsConcurrentDictionary = byteArray10MB.ToConcurrentDictionary();
+
+                    Parallel.For(0, (byteArray10MB.Length - remainderDividingBy16) / 16, i =>
                     {
-                        key.CopyTo(keyCopy, 0);
-                        byte[][] inputMatrix = CreateInputMatrix4By4(byteArray10MB, index * 16);
+                        byte[] keyCopy = concurrentKey.ToArray<byte>();
+                        byte[][] inputMatrix = CreateInputMatrix4By4Concurrent(byteArray10MBAsConcurrentDictionary, i * 16);
                         keyCopy.ShiftRight(2); // dependent on number of rounds
                         AddRoundKeyInverse(inputMatrix, keyCopy);
 
                         for (int round = 1; round <= 13; round++)
                         {
                             ShiftRowsInverse(inputMatrix);
-                            SubBytesInverse(inputMatrix);
+                            SubBytesInverseConcurrent(inputMatrix);
                             AddRoundKeyInverse(inputMatrix, keyCopy);
-                            MixColumnsInverse(inputMatrix);
+                            MixColumnsInverseConcurrent(inputMatrix);
                         }
 
                         ShiftRowsInverse(inputMatrix);
-                        SubBytesInverse(inputMatrix);
+                        SubBytesInverseConcurrent(inputMatrix);
                         AddRoundKeyInverse(inputMatrix, keyCopy);
-                        Array.Copy(CryptoMatrixToArray(inputMatrix), 0, bytesToWrite10MB, index * 16, 16);
+                        Extensions.ArrayCopyToConcurrentDictionary(CryptoMatrixToArray(inputMatrix), 0, bytesToWrite10MB, i * 16, 16);
                     });
                     while (remainderDividingBy16 > 0)
                     {
                         bytesToWrite10MB[byteArray10MB.Length - remainderDividingBy16] = byteArray10MB[byteArray10MB.Length - remainderDividingBy16];
                         remainderDividingBy16--;
                     }
-                    Console.WriteLine(" - decrypt processed 10MB - " + bytesToWrite10MB.Length + " - " + outputFileName + " - elapsed: " + s.Elapsed + " - " + indexOfReadBytes);
-                    writeTasks.Add(WriteCryptoBytes(fw, bytesToWrite10MB));
+                    Console.WriteLine(" - decrypt processed 10MB - " + bytesToWrite10MB.Count + " - " + outputFileName + " - elapsed: " + s.Elapsed + " - " + indexOfReadBytes);
+                    writeTasks.Add(WriteCryptoBytes(fw, bytesToWrite10MB.ToArray<byte>()));
                     indexOfReadBytes++;
                 }
                 await Task.WhenAll(writeTasks);
