@@ -76,7 +76,6 @@ namespace zadaci_2
             s.Start();
 
             byte[] keyCopy = new byte[key.Length];
-            key.CopyTo(keyCopy, 0);
             string outputFileName = Path.GetFileName(outputFilePath);
             IList<Task> writeTasks = new List<Task>();
             using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
@@ -88,6 +87,7 @@ namespace zadaci_2
                     byte[] bytesToWrite10MB = new byte[byteArray10MB.Length];
                     for (int i = 0; i < byteArray10MB.Length - remainderDividingBy16; i += 16)
                     {
+                        key.CopyTo(keyCopy, 0);
                         byte[][] inputMatrix = CreateInputMatrix4By4(byteArray10MB, i);
                         AddRoundKey(inputMatrix, keyCopy);
 
@@ -539,7 +539,6 @@ namespace zadaci_2
             s.Start();
 
             byte[] keyCopy = new byte[key.Length];
-            key.CopyTo(keyCopy, 0);
             IList<Task> writeTasks = new List<Task>();
             string outputFileName = Path.GetFileName(outputFilePath);
             using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
@@ -551,6 +550,7 @@ namespace zadaci_2
                     byte[] bytesToWrite10MB = new byte[byteArray10MB.Length];
                     for (int i = 0; i < byteArray10MB.Length - remainderDividingBy16; i += 16)
                     {
+                        key.CopyTo(keyCopy, 0);
                         byte[][] inputMatrix = CreateInputMatrix4By4(byteArray10MB, i);
                         keyCopy.ShiftRight(2); // dependent on number of rounds
                         AddRoundKeyInverse(inputMatrix, keyCopy);
