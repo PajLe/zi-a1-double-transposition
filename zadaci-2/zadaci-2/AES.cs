@@ -279,6 +279,27 @@ namespace zadaci_2
             }
         }
 
+        private static void MixColumnsConcurrent(byte[][] inputMatrix)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                byte a0 = inputMatrix[0][j];
+                byte a1 = inputMatrix[1][j];
+                byte a2 = inputMatrix[2][j];
+                byte a3 = inputMatrix[3][j];
+
+                byte r0 = (byte)(gfmultby02Concurrent(a0) ^ a3 ^ a2 ^ gfmultby03Concurrent(a1));
+                byte r1 = (byte)(gfmultby02Concurrent(a1) ^ a0 ^ a3 ^ gfmultby03Concurrent(a2));
+                byte r2 = (byte)(gfmultby02Concurrent(a2) ^ a1 ^ a0 ^ gfmultby03Concurrent(a3));
+                byte r3 = (byte)(gfmultby02Concurrent(a3) ^ a2 ^ a1 ^ gfmultby03Concurrent(a0));
+
+                inputMatrix[0][j] = r0;
+                inputMatrix[1][j] = r1;
+                inputMatrix[2][j] = r2;
+                inputMatrix[3][j] = r3;
+            }
+        }
+
         private static void ShiftRows(byte[][] inputMatrix)
         {
             for (int i = 1; i < 4; i++)
@@ -680,7 +701,7 @@ namespace zadaci_2
                         {
                             SubBytesConcurrent(inputMatrix);
                             ShiftRows(inputMatrix);
-                            MixColumns(inputMatrix);
+                            MixColumnsConcurrent(inputMatrix);
                             AddRoundKey(inputMatrix, keyCopy);
                         }
 
