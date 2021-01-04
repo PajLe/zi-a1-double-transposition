@@ -345,6 +345,13 @@ namespace zadaci_2
             await fw.WriteAsync(cryptoBytes, 0, cryptoBytes.Length);
         }
 
+        private static void WriteCryptoBytesSync(FileStream fw, ConcurrentDictionary<int, byte> concurrentBytes)
+        {
+            var kvPairBytes = concurrentBytes.ToArray();
+            foreach (var kvPair in kvPairBytes)
+                fw.WriteByte(kvPair.Value);
+        }
+
         private static byte[][] CreateInputMatrix4By4(byte[] sourceBytes, int startPos)
         {
             byte[][] matrix4x4 = new byte[4][];
@@ -361,14 +368,13 @@ namespace zadaci_2
 
         private static byte[][] CreateInputMatrix4By4Concurrent(ConcurrentDictionary<int, byte> sourceBytesAsDictionary, int startPos)
         {
-            byte[] sourceBytes = sourceBytesAsDictionary.ToArray<byte>();
             byte[][] matrix4x4 = new byte[4][];
             for (int i = 0; i < 4; i++)
             {
                 matrix4x4[i] = new byte[4];
 
                 for (int j = 0; j < 4; j++)
-                    matrix4x4[i][j] = sourceBytes[startPos++];
+                    matrix4x4[i][j] = sourceBytesAsDictionary[startPos++];
             }
 
             return matrix4x4;
@@ -709,7 +715,6 @@ namespace zadaci_2
 
             var concurrentKey = key.ToConcurrentDictionary();
             string outputFileName = Path.GetFileName(outputFilePath);
-            IList<Task> writeTasks = new List<Task>();
             using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
             {
                 int indexOfReadBytes = 0;
@@ -744,10 +749,9 @@ namespace zadaci_2
                         remainderDividingBy16--;
                     }
                     Console.WriteLine(" - encrypt processed 10MB - " + bytesToWrite10MB.Count + " - " + outputFileName + " - elapsed: " + s.Elapsed + " - " + indexOfReadBytes);
-                    writeTasks.Add(WriteCryptoBytes(fw, bytesToWrite10MB.ToArray<byte>()));
+                    WriteCryptoBytesSync(fw, bytesToWrite10MB);
                     indexOfReadBytes++;
                 }
-                await Task.WhenAll(writeTasks);
             }
             s.Stop();
             Console.WriteLine("--------------------------total encrypt time: " + s.Elapsed);
@@ -761,7 +765,6 @@ namespace zadaci_2
             s.Start();
 
             var concurrentKey = key.ToConcurrentDictionary();
-            IList<Task> writeTasks = new List<Task>();
             string outputFileName = Path.GetFileName(outputFilePath);
             using (FileStream fw = new FileStream(outputFilePath, FileMode.OpenOrCreate))
             {
@@ -798,10 +801,9 @@ namespace zadaci_2
                         remainderDividingBy16--;
                     }
                     Console.WriteLine(" - decrypt processed 10MB - " + bytesToWrite10MB.Count + " - " + outputFileName + " - elapsed: " + s.Elapsed + " - " + indexOfReadBytes);
-                    writeTasks.Add(WriteCryptoBytes(fw, bytesToWrite10MB.ToArray<byte>()));
+                    WriteCryptoBytesSync(fw, bytesToWrite10MB);
                     indexOfReadBytes++;
                 }
-                await Task.WhenAll(writeTasks);
             }
             s.Stop();
             Console.WriteLine("--------------------------total decrypt time: " + s.Elapsed);
